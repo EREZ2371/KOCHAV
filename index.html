@@ -57,6 +57,7 @@
   background: linear-gradient(to right, #447bb1, #3a5f8b); /* גרדיאנט בצבע #3a5f8b */
   color: white;
   padding: 5px;
+  height: 15vh; /* 10% מגובה המסך */
   position: absolute;
   top: 0;
   left: 40%; /* התמונה תופסת 40% אז מתחילים אחרי */
@@ -69,7 +70,7 @@
   white-space: nowrap; /* מונע ירידת שורה */
   letter-spacing: 10px;/* ריווח בין אותיות */
   border-radius: 0px 0px 0px 10px; /* רדיוס רק בפינה התחתונה */
-    flex-direction: column; /* שינה את הכיוון האנכי */
+  flex-direction: column; /* שינה את הכיוון האנכי */
   
 
 }
@@ -187,6 +188,7 @@
 	  left: 0px;
       font-size: 20px;
       color: WHITE;
+	  height: 10vh; /* 15% מגובה המסך */
      <!-- background: #7462f8;  -->
       padding: 10px;
 	  padding-top: 20px;
@@ -223,7 +225,7 @@
 	/* גלובס*/
     #news-container {
 	 font-size: 30px;
-	 margin-top: 0px; /* מזיז את הכותרת כלפי מעלה */
+	 margin-top: 20px; /* מזיז את הכותרת כלפי מעלה */
 	 TOP: 350px;
 	 right: 20px;
 	 position: fixed;
@@ -236,8 +238,7 @@
      border-radius: 10px;
      text-decoration: none; /* מסיר את הקו התחתון */
      font-weight: bold; /* הדגשת הכותרת */
-     height: 40%;
-	     
+     height: 40vh; /* 80% מגובה המסך */	     
     }
 
     #news-display {
@@ -247,14 +248,13 @@
     line-height: 1.6; /* שים לב, ניתן לשנות את המספר לפי הצורך */
 	font-size: 20px;
 	background: #526E93;
-	
+	height: 20vh; /* 80% מגובה המסך */
     }
 	
 
 	#news-container h2 {
 	font-family: 'Meninblue' ,sans-serif;
-	height: 40px;
-    margin-top:-10px; /* מזיז את הכותרת כלפי מעלה */
+	margin-top:-10px; /* מזיז את הכותרת כלפי מעלה */
     font-size: 30px; /* מגדיל את הכותרת אם צריך */
 	background: #3589b4;
 	padding-top:10px;
@@ -262,7 +262,8 @@
 	border-radius: 10px 10px 0 0; /* רדיוס רק בפינות העליונות */
 	text-decoration:center ;
 	text-align: center;
-	
+	height: 7vh; /* 80% מגובה המסך */
+	line-height: 7vh;
 	
 }
 /*זמני כניסת שבת*/
@@ -271,7 +272,7 @@
 
         #shabbat-container {
 	 font-size: 30px;
-	 margin-top: 0px; /* מזיז את הכותרת כלפי מעלה */
+	 margin-top: 20px; /* מזיז את הכותרת כלפי מעלה */
 	 TOP: 350px;
 	 right: 35%;
 	 position: fixed;
@@ -283,23 +284,26 @@
      border-radius: 10px;
      text-decoration: none; /* מסיר את הקו התחתון */
      font-weight: bold; /* הדגשת הכותרת */
-     height: 40%;
+     height: 40vh; /* 80% מגובה המסך */	
 	 border-radius: 10px ; /* רדיוס רק בפינות העליונות */
 	 background: #526E93;    
+	 
     }
 
         /* כותרת */
     #shabbat-container h2 {
 	font-family: 'Meninblue' ,sans-serif;
-	height: 60px;
-    margin-top:-10px; /* מזיז את הכותרת כלפי מעלה */
+	margin-top:-10px; /* מזיז את הכותרת כלפי מעלה */
     font-size: 30px; /* מגדיל את הכותרת אם צריך */
 	background: #3589b4;
 	padding-top:10px;
-	padding-bottom: 0x;
+	padding-bottom: 10px;
 	border-radius: 10px 10px 0 0; /* רדיוס רק בפינות העליונות */
 	text-decoration:center ;
 	text-align: center;
+	height: 7vh; /* 80% מגובה המסך */
+	line-height: 7vh;
+	
         }
 
         /* תוכן זמני שבת */
@@ -503,7 +507,7 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
 
 
     <div id="shabbat-container">
-        <h2> שבת - <span id="parasha">טוען...</span> 📜</h2>
+        <h2> שבת - <span id="parasha">טוען...</span> </h2>
         <div id="shabbat-display">
             <p>🕯️ כניסת שבת: <span id="candles-time">טוען...</span></p>
             <p>✨ יציאת שבת: <span id="havdalah-time">טוען...</span></p>
