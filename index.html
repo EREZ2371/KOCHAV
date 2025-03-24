@@ -558,45 +558,40 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
 </div>
 
 <script>
-
 async function fetchBreakingNews() {
-  const response = await fetch('https://erez2371.github.io/KOCHAV/breaking-news.json');
-  const data = await response.json();
-  console.log(data); // בדיקה
-}
-fetchBreakingNews();
+  try {
+    const response = await fetch('https://erez2371.github.io/KOCHAV/breaking-news.json');
+    
+    // אם הבקשה הצליחה
+    if (response.ok) {
+        const data = await response.json(); // ממיר את התגובה ל-JSON
 
-        // אם הבקשה הצליחה
-        if (response.ok) {
-            const newsData = await response.json(); // ממיר את התגובה ל-JSON
+        // עדכון ה-HTML להצגת החדשות
+        let breakingNewsHtml = '';
+        data.news.forEach(item => {
+            breakingNewsHtml += `
+                <div class="breaking-news-item">
+                    <a href="${item.link}" target="_blank">${item.title}</a>
+                </div>
+            `;
+        });
 
-            // עדכון ה-HTML להצגת החדשות
-            let breakingNewsHtml = '';
-            newsData.news.forEach(item => {
-                breakingNewsHtml += `
-                    <div class="breaking-news-item">
-                        <a href="${item.link}" target="_blank">${item.title}</a>
-                    </div>
-                `;
-            });
-
-            // הצגת החדשות על הדף
-            document.getElementById('breaking-news').innerHTML = breakingNewsHtml;
-        } else {
-            throw new Error('שגיאה בקבלת מבזקי חדשות');
-        }
-    } catch (error) {
-        console.error("שגיאה בטעינת מבזקי החדשות:", error);
-        document.getElementById('breaking-news').innerHTML = 'לא ניתן להציג מבזקי חדשות.';
+        // הצגת החדשות על הדף
+        document.getElementById('breaking-news').innerHTML = breakingNewsHtml;
+    } else {
+        throw new Error('שגיאה בקבלת מבזקי חדשות');
     }
+  } catch (error) {
+    console.error("שגיאה בטעינת מבזקי החדשות:", error);
+    document.getElementById('breaking-news').innerHTML = 'לא ניתן להציג מבזקי חדשות.';
+  }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    fetchBreakingNews();
-    setInterval(fetchBreakingNews, 60000); // עדכון כל 60 שניות
+  fetchBreakingNews();
+  setInterval(fetchBreakingNews, 60000); // עדכון כל 60 שניות
 });
-
-  </script>
+</script>
 
 
 
