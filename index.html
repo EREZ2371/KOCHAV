@@ -562,23 +562,25 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
   </div>
 </div>
 
-<script>
-let newsItems = []; // מערך לאחסון המבזקים
-let currentNewsIndex = 0; // אינדקס להצגת המבזק הנוכחי
+// פונקציה להמיר את הזמן ל-Zone Time של ישראל
+function convertToIsraelTime(pubDate) {
+    // אם השעה היא בזמן קיץ (DST), יש להוסיף 3 שעות, אחרת 2 שעות
+    const israelOffset = (pubDate.getMonth() >= 3 && pubDate.getMonth() <= 9) ? 3 : 2;
+    pubDate.setHours(pubDate.getHours() + israelOffset);
+    return pubDate;
+}
 
+// עדכון השימוש של הזמן ב-`fetchWallaBreakingNews`
 async function fetchWallaBreakingNews() {
     try {
-        // שליחת בקשה ל-AllOrigins כדי לעקוף את מגבלת ה-CORS
         const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://rss.walla.co.il/feed/22')}`);
 
         if (!response.ok) throw new Error('שגיאה בשליפת הנתונים');
 
-        // המרת התוכן שהתקבל מ-XML ל-JSON
         const data = await response.json();
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(data.contents, "text/xml");
 
-        // שליפת כל הפריטים מה-RSS (עד 10 פריטים אחרונים)
         const items = xmlDoc.querySelectorAll("item");
         newsItems = [];
 
@@ -588,45 +590,22 @@ async function fetchWallaBreakingNews() {
             const title = item.querySelector("title").textContent;
             const pubDate = new Date(item.querySelector("pubDate").textContent);
 
+            // המרת השעה לזמן ישראלי
+            const israelTime = convertToIsraelTime(pubDate);
+
             // עיצוב השעה בפורמט HH:MM
-            const hours = pubDate.getHours().toString().padStart(2, '0');
-            const minutes = pubDate.getMinutes().toString().padStart(2, '0');
+            const hours = israelTime.getHours().toString().padStart(2, '0');
+            const minutes = israelTime.getMinutes().toString().padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
 
-            // הוספת המבזק למערך בסדר הנכון (הראשון קודם)
             newsItems.unshift({ time: formattedTime, title });
         });
 
-        // מציג מבזק ראשון מיד לאחר שליפת הנתונים
         displayNews();
     } catch (error) {
         console.error("שגיאה בטעינת מבזקי החדשות:", error);
     }
 }
-
-// מציג את המבזק הנוכחי ומתקדם לזה שאחריו בלולאה
-function displayNews() {
-    if (newsItems.length === 0) return;
-
-    const newsTicker = document.getElementById('newsTicker');
-    if (newsTicker) {
-        newsTicker.innerHTML = `
-            <span class="news-time">${newsItems[currentNewsIndex].time}</span>
-            <span class="news-title">${newsItems[currentNewsIndex].title}</span>
-        `;
-
-        // מעבר למבזק הבא
-        currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
-    }
-}
-
-// קריאה ראשונית ושליפה כל 10 דקות
-document.addEventListener("DOMContentLoaded", function () {
-    fetchWallaBreakingNews();
-    setInterval(fetchWallaBreakingNews, 600000); // 10 דקות = 600,000 מילישניות
-    setInterval(displayNews, 10000); // שינוי מבזק כל 10 שניות
-});
-</script>
 
 
 
