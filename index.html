@@ -576,8 +576,15 @@ async function fetchBreakingNews() {
             `;
         });
 
-        // הצגת החדשות על הדף
-        document.getElementById('breaking-news').innerHTML = breakingNewsHtml;
+        // מציאת אלמנט ה-HTML שבו נרצה להציג את החדשות
+        const newsContainer = document.getElementById('breaking-news');
+        if (newsContainer) {
+            // אם האלמנט קיים, עדכון ה-innerHTML
+            newsContainer.innerHTML = breakingNewsHtml;
+        } else {
+            // אם האלמנט לא נמצא, הצגת הודעת שגיאה
+            console.error('לא נמצא אלמנט להציג את מבזקי החדשות.');
+        }
     } else {
         throw new Error('שגיאה בקבלת מבזקי חדשות');
     }
@@ -592,6 +599,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setInterval(fetchBreakingNews, 60000); // עדכון כל 60 שניות
 });
 </script>
+
 
 
 
