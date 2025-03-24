@@ -106,8 +106,8 @@
       align-items: center;
       justify-content: right; /* יישור הכל לצד ימין */
       font-size: 18px;
-      font-weight: bold;
-      color: black;
+      font-weight: REGULAR;
+      color: WHITE;
       padding: 10px;
       border-top: 2px solid #ddd;
       background: none;
@@ -441,7 +441,7 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
         const displayElement = document.getElementById("news-display");  // אלמנט ה-HTML שבו יופיעו החדשות
 
         // שליחת בקשה לשרת שמחזיר את נתוני ה-RSS
-        fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.globes.co.il/webservice/rss/rssfeeder.asmx/FeederNode?iID=3223'))
+        fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.globes.co.il/webservice/rss/rssfeeder.asmx/FeederNode?iID=2'))
             .then(response => response.json())  // המרת התגובה ל-JSON
             .then(data => {
                 let parser = new DOMParser();  // יצירת אובייקט לניתוח XML
@@ -553,56 +553,75 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
   <img src="images/news-icon.png" alt="מבזקי חדשות" class="ticker-image"> <!-- תמונה קבועה -->
   <div id="newsTicker">
     <span class="news-time">00:00</span> <!-- הצגת שעת הפרסום -->
-    <span class="news-title"><a href="#" target="_blank">טוען חדשות...</a></span> <!-- הצגת הכותרת -->
+    <span class="news-title">טוען חדשות...</span> <!-- הצגת הכותרת -->
   </div>
 </div>
- <div id="breaking-news"></div>
+
 <script>
-// שמור את הפונקציה fetchBreakingNews כפי שהיא:
-async function fetchBreakingNews() {
+let newsItems = []; // מערך לאחסון המבזקים
+let currentNewsIndex = 0; // אינדקס להצגת המבזק הנוכחי
+
+async function fetchWallaBreakingNews() {
     try {
-        const response = await fetch('https://erez2371.github.io/KOCHAV/news.json');
-        if (response.ok) {
-            const data = await response.json(); // ממיר את התגובה ל-JSON
+        // שליחת בקשה ל-AllOrigins כדי לעקוף את מגבלת ה-CORS
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://rss.walla.co.il/feed/22')}`);
 
-            // עדכון ה-HTML להצגת החדשות
-            let breakingNewsHtml = '';
-            data.news.forEach(item => {
-                breakingNewsHtml += `
-                    <div class="breaking-news-item">
-                        <a href="${item.link}" target="_blank">${item.title}</a>
-                    </div>
-                `;
-            });
+        if (!response.ok) throw new Error('שגיאה בשליפת הנתונים');
 
-            // מציאת אלמנט ה-HTML שבו נרצה להציג את החדשות
-            const newsContainer = document.getElementById('breaking-news');
-            if (newsContainer) {
-                newsContainer.innerHTML = breakingNewsHtml;
-            } else {
-                console.error('לא נמצא אלמנט להציג את מבזקי החדשות.');
-            }
-        } else {
-            throw new Error('שגיאה בקבלת מבזקי חדשות');
-        }
+        // המרת התוכן שהתקבל מ-XML ל-JSON
+        const data = await response.json();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+
+        // שליפת כל הפריטים מה-RSS (עד 10 פריטים אחרונים)
+        const items = xmlDoc.querySelectorAll("item");
+        newsItems = [];
+
+        items.forEach((item, index) => {
+            if (index >= 10) return; // מגבילים ל-10 מבזקים בלבד
+
+            const title = item.querySelector("title").textContent;
+            const pubDate = new Date(item.querySelector("pubDate").textContent);
+
+            // עיצוב השעה בפורמט HH:MM
+            const hours = pubDate.getHours().toString().padStart(2, '0');
+            const minutes = pubDate.getMinutes().toString().padStart(2, '0');
+            const formattedTime = `${hours}:${minutes}`;
+
+            // הוספת המבזק למערך בסדר הנכון (הראשון קודם)
+            newsItems.unshift({ time: formattedTime, title });
+        });
+
+        // מציג מבזק ראשון מיד לאחר שליפת הנתונים
+        displayNews();
     } catch (error) {
         console.error("שגיאה בטעינת מבזקי החדשות:", error);
-        const newsContainer = document.getElementById('breaking-news');
-        if (newsContainer) {
-            newsContainer.innerHTML = 'לא ניתן להציג מבזקי חדשות.';
-        }
     }
 }
 
-// יצירת פונקציה async כדי לקרוא לפונקציה fetchBreakingNews
-document.addEventListener("DOMContentLoaded", async function () {
-    await fetchBreakingNews(); // משתמשים ב-await לקריאה
-    setInterval(fetchBreakingNews, 60000); // עדכון כל 60 שניות
+// מציג את המבזק הנוכחי ומתקדם לזה שאחריו בלולאה
+function displayNews() {
+    if (newsItems.length === 0) return;
+
+    const newsTicker = document.getElementById('newsTicker');
+    if (newsTicker) {
+        newsTicker.innerHTML = `
+            <span class="news-time">${newsItems[currentNewsIndex].time}</span>
+            <span class="news-title">${newsItems[currentNewsIndex].title}</span>
+        `;
+
+        // מעבר למבזק הבא
+        currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
+    }
+}
+
+// קריאה ראשונית ושליפה כל 10 דקות
+document.addEventListener("DOMContentLoaded", function () {
+    fetchWallaBreakingNews();
+    setInterval(fetchWallaBreakingNews, 600000); // 10 דקות = 600,000 מילישניות
+    setInterval(displayNews, 10000); // שינוי מבזק כל 10 שניות
 });
-
 </script>
-
-
 
 
 
