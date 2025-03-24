@@ -1,0 +1,32 @@
+name: Fetch RSS Feed
+
+on:
+  schedule:
+    - cron: '0 * * * *' # רץ כל שעה
+  workflow_dispatch:
+
+jobs:
+  fetch-rss:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Fetch RSS feed
+        run: |
+          curl -L -o rss_feed.xml https://rss.walla.co.il/feed/22
+
+      - name: Convert RSS to JSON
+        run: |
+          sudo apt-get install -y jq xml2json
+          cat rss_feed.xml | xml2json > rss_feed.json
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add rss_feed.json
+          git commit -m 'Update RSS feed'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
