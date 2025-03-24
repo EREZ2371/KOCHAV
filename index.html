@@ -558,50 +558,48 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
 </div>
  <div id="breaking-news"></div>
 <script>
+// שמור את הפונקציה fetchBreakingNews כפי שהיא:
 async function fetchBreakingNews() {
-  try {
-    const response = await fetch('https://erez2371.github.io/KOCHAV/news.json');
-    
-    // אם הבקשה הצליחה
-    if (response.ok) {
-        const data = await response.json(); // ממיר את התגובה ל-JSON
+    try {
+        const response = await fetch('https://erez2371.github.io/KOCHAV/news.json');
+        if (response.ok) {
+            const data = await response.json(); // ממיר את התגובה ל-JSON
 
-        // עדכון ה-HTML להצגת החדשות
-        let breakingNewsHtml = '';
-        data.news.forEach(item => {
-            breakingNewsHtml += `
-                <div class="breaking-news-item">
-                    <a href="${item.link}" target="_blank">${item.title}</a>
-                </div>
-            `;
-        });
+            // עדכון ה-HTML להצגת החדשות
+            let breakingNewsHtml = '';
+            data.news.forEach(item => {
+                breakingNewsHtml += `
+                    <div class="breaking-news-item">
+                        <a href="${item.link}" target="_blank">${item.title}</a>
+                    </div>
+                `;
+            });
 
-        // מציאת אלמנט ה-HTML שבו נרצה להציג את החדשות
+            // מציאת אלמנט ה-HTML שבו נרצה להציג את החדשות
+            const newsContainer = document.getElementById('breaking-news');
+            if (newsContainer) {
+                newsContainer.innerHTML = breakingNewsHtml;
+            } else {
+                console.error('לא נמצא אלמנט להציג את מבזקי החדשות.');
+            }
+        } else {
+            throw new Error('שגיאה בקבלת מבזקי חדשות');
+        }
+    } catch (error) {
+        console.error("שגיאה בטעינת מבזקי החדשות:", error);
         const newsContainer = document.getElementById('breaking-news');
         if (newsContainer) {
-            // אם האלמנט קיים, עדכון ה-innerHTML
-            newsContainer.innerHTML = breakingNewsHtml;
-        } else {
-            // אם האלמנט לא נמצא, הצגת הודעת שגיאה
-            console.error('לא נמצא אלמנט להציג את מבזקי החדשות.');
+            newsContainer.innerHTML = 'לא ניתן להציג מבזקי חדשות.';
         }
-    } else {
-        throw new Error('שגיאה בקבלת מבזקי חדשות');
     }
-  } catch (error) {
-    console.error("שגיאה בטעינת מבזקי החדשות:", error);
-    // אם לא נמצא אלמנט להציג את החדשות
-    const newsContainer = document.getElementById('breaking-news');
-    if (newsContainer) {
-        newsContainer.innerHTML = 'לא ניתן להציג מבזקי חדשות.';
-    }
-  }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  fetchBreakingNews();
-  setInterval(fetchBreakingNews, 60000); // עדכון כל 60 שניות
+// יצירת פונקציה async כדי לקרוא לפונקציה fetchBreakingNews
+document.addEventListener("DOMContentLoaded", async function () {
+    await fetchBreakingNews(); // משתמשים ב-await לקריאה
+    setInterval(fetchBreakingNews, 60000); // עדכון כל 60 שניות
 });
+
 </script>
 
 
