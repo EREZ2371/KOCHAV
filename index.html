@@ -562,7 +562,15 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
   </div>
 </div>
 
+ <script>
 
+// פונקציה להמיר את הזמן ל-Zone Time של ישראל
+function convertToIsraelTime(pubDate) {
+    // אם השעה היא בזמן קיץ (DST), יש להוסיף 3 שעות, אחרת 2 שעות
+    const israelOffset = (pubDate.getMonth() >= 3 && pubDate.getMonth() <= 9) ? 3 : 2;
+    pubDate.setHours(pubDate.getHours() + israelOffset);
+    return pubDate;
+}
 
 // עדכון השימוש של הזמן ב-`fetchWallaBreakingNews`
 async function fetchWallaBreakingNews() {
@@ -601,6 +609,7 @@ async function fetchWallaBreakingNews() {
     }
 }
 
+ </script>
 
 
 
