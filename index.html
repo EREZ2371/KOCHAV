@@ -558,36 +558,21 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
 </div>
 
 <script>
-let newsItems = [];
-let currentIndex = 0;
-
-// שליפת חדשות מה-RSS
-async function fetchBreakingNews() {
+sync function fetchBreakingNews() {
   try {
-    const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://rss.walla.co.il/feed/22'));
+    const response = await fetch('fetch('https://raw.githubusercontent.com/EREZ2371/KOCHAV/main/rss_feed.json')
+');
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const data = await response.json();
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(data.contents, 'application/xml');
-    const items = xmlDoc.getElementsByTagName('item');
+    const newsData = await response.json();
+    newsItems = newsData.map(item => ({
+      title: item.title,
+      link: item.link,
+      time: new Date(item.pubDate).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+    }));
 
-    newsItems = [];
-    for (let i = 0; i < items.length && i < 10; i++) {
-      const title = items[i].getElementsByTagName('title')[0]?.textContent || 'כותרת לא זמינה';
-      const link = items[i].getElementsByTagName('link')[0]?.textContent || '#';
-      const pubDate = items[i].getElementsByTagName('pubDate')[0]?.textContent || 'לא צוין';
-
-      const time = new Date(pubDate).toLocaleTimeString('he-IL', {
-        hour: '2-digit', minute: '2-digit'
-      });
-
-      newsItems.push({ title, link, time });
-    }
-
-    newsItems.reverse();
     if (newsItems.length > 0) {
       currentIndex = 0;
       updateNews();
@@ -599,23 +584,6 @@ async function fetchBreakingNews() {
   }
 }
 
-// עדכון המבזקים כל 10 שניות
-function updateNews() {
-  if (newsItems.length === 0) return;
-
-  let currentNews = newsItems[currentIndex];
-
-  document.getElementById('newsTicker').innerHTML = `
-    <span class="news-time">${currentNews.time}</span>
-    <span class="news-title"><a href="${currentNews.link}" target="_blank">${currentNews.title}</a></span>
-  `;
-
-  currentIndex = (currentIndex + 1) % newsItems.length;
-}
-
-// קריאה ראשונית + רענון כל 5 דקות
-fetchBreakingNews();
-setInterval(fetchBreakingNews, 300000);
 
 </script>
 
