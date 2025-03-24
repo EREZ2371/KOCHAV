@@ -590,7 +590,11 @@ async function fetchBreakingNews() {
     }
   } catch (error) {
     console.error("שגיאה בטעינת מבזקי החדשות:", error);
-    document.getElementById('breaking-news').innerHTML = 'לא ניתן להציג מבזקי חדשות.';
+    // אם לא נמצא אלמנט להציג את החדשות
+    const newsContainer = document.getElementById('breaking-news');
+    if (newsContainer) {
+        newsContainer.innerHTML = 'לא ניתן להציג מבזקי חדשות.';
+    }
   }
 }
 
@@ -599,6 +603,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setInterval(fetchBreakingNews, 60000); // עדכון כל 60 שניות
 });
 </script>
+
 
 
 
