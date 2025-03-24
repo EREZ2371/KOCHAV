@@ -1,0 +1,16 @@
+{
+  "news": [
+    {
+      "title": "מבזק חדשות 1",
+      "link": "https://example.com/news1"
+    },
+    {
+      "title": "מבזק חדשות 2",
+      "link": "https://example.com/news2"
+    },
+    {
+      "title": "מבזק חדשות 3",
+      "link": "https://example.com/news3"
+    }
+  ]
+}
