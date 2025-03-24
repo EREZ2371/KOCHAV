@@ -558,11 +558,14 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
 </div>
 
 <script>
- async function fetchBreakingNews() {
-    try {
-        // שולחים בקשה לשרת לקבלת מבזקי החדשות
-        const response = await fetch('/api/breaking-news');
-        
+
+async function fetchBreakingNews() {
+  const response = await fetch('https://erez2371.github.io/KOCHAV/breaking-news.json');
+  const data = await response.json();
+  console.log(data); // בדיקה
+}
+fetchBreakingNews();
+
         // אם הבקשה הצליחה
         if (response.ok) {
             const newsData = await response.json(); // ממיר את התגובה ל-JSON
