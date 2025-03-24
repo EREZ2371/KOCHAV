@@ -48,6 +48,7 @@
       overflow: hidden;
       position: relative;
 	  
+	  
     }
 
     /* סגנונות לכותרת ברוכים הבאים */
@@ -57,7 +58,7 @@
   background: linear-gradient(to right, #447bb1, #3a5f8b); /* גרדיאנט בצבע #3a5f8b */
   color: white;
   padding: 5px;
-  height: 20vt; /* 10% מגובה המסך */
+  height: 15vh; /* 10% מגובה המסך */
   position: relative;
   top: 0;
   left: 40%; /* התמונה תופסת 40% אז מתחילים אחרי */
@@ -95,79 +96,69 @@
 
 
 
+/* אזור מבזקי החדשות */
+.news-ticker-wrapper {
+  width: 100%;
+  height: 11vh; /* גובה 6% מגובה המסך */
+  display: flex;
+  align-items: center; /* מוודא שהתוכן מיושר אנכית */
+  justify-content: start; /* מתחיל מימין */
+  font-size: 18px;
+  font-weight: normal;
+  color: white;
+  background: none;
+  border-top: none;
+  overflow: hidden;
+}
 
-    /* אזור מבזקי החדשות */
-    .news-ticker-wrapper {
-      width: 100%;
-      height: 5vt; /* 10% מגובה המסך */
-      position: relative;
-      bottom: 0;
-      left: 0;
-      display: flex;
-      align-items: center;
-      justify-content: right; /* יישור הכל לצד ימין */
-      font-size: 18px;
-      font-weight: REGULAR;
-      color: WHITE;
-      padding: 10px;
-      border-top: 2px solid #ddd;
-      background: none;
-	  border-top: none !important; /* ודא שאין מסגרת עליונה */
-    }
+/* תווית קבועה לתמונה בצד ימין (לא מיקום קבוע) */
+.ticker-image {
+  height: auto;
+  max-height: 50px;
+  width: auto;
+  margin-right: 0px; /* יישור התמונה לצד ימין */
+}
 
-    /* תווית קבועה תמונת וואלה חדשות */
-   .ticker-image {
-     height: 5vt; /* גובה התמונה */
-     width: auto; /* שמירה על יחס רוחב-גובה */
-     margin-left: 15px; /* רווח קטן מימין */
- 	 min-height: 50px; /* למנוע גובה 0 */
-     display: block; /* למנוע בעיות של אלמנטים inline */
-     }
+/* שעת פרסום המבזק */
+.news-time {
+  color: white;
+  margin-left: 15px;
+  margin-right: 20px; /* הגדלתי את המרווח מהתמונה */
+  font-family: Gisha, Arial, sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 5vh; /* התאמה לגובה */
+  display: inline-block; /* וודא שהתוכן לא יפול מעל התמונה */
+}
+
+/* כותרת המבזק */
+.news-title a {
+  text-decoration: none;
+  color: white;
+  font-family: Gisha, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: normal;
+  line-height: 5vh; /* התאמה לגובה */
+  margin-right: 10px;
+}
+
+/* מוודא שהתוכן מסודר ללא תנועה */
+#newsTicker {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
 
 
-    /* תווית קבועה "מבזקי חדשות" */
-    .ticker-label {
-      color: red;
-      font-size: 18px;
-      font-weight: bold;
-      background-color: #f1f1f1;
-      padding-left: 50px;
-	  padding-right: 40px;
-	  padding-top: 10px;
-	  padding-bottom: 10px;
-      margin-left: 40px; /* מרחק מהמבזק */
-	  border-radius: 25px; /* מעגל את הפינות */
-      white-space: nowrap; /* מונע ירידת שורה */
-      display: inline-block; /* מונע מתיחה לא טבעית */
-	  margin-left: 20px;
-	  border-radius:15px;
-	  margin-right: -10px;
-	  margin-top: 0px;
-      
-    }
 
-    /* שעת פרסום המבזק */
-    .news-time {
-      color: white;
-      margin-left: 15px;
-	  font-family: Gisha, Arial, sans-serif;
-      font-weight: Bold;
-    }
 
-    /* כותרת המבזק */
-    .news-title a {
-      text-decoration: none;
-      color: WHITE;
-	  font-family: Gisha, Arial, sans-serif;
-      font-weight: normal;
-    }
 	
 	.side-image {
      position: fixed;
      top: 20px; /* מרווח של 100 פיקסלים מהחלק העליון */
      left: 20px;
-     width: 36%; /* מתאים את רוחב התמונה לגודל המסך */
-     height: calc(100% - 20px - 40px); /* גובה המסך פחות 100 פיקסלים מלמעלה ו-100 מלמטה */
+     width: 35%; /* מתאים את רוחב התמונה לגודל המסך */
+     height: 95%; /* גובה המסך פחות 100 פיקסלים מלמעלה ו-100 מלמטה */
      object-fit: cover; /* מוודא שהתמונה תתאים בתוך האזור */
      opacity: 0;
      transition: opacity 1s ease-in-out;
@@ -185,12 +176,12 @@
     /* סגנון לתאריך ושעה מתחת לתמונה הנוספת */ 
     .datetime {
       position: relative;
-      top: 120px ;  /* ממקם מתחת לתמונה הנוספת */
+      top: 0px ;  /* ממקם מתחת לתמונה הנוספת */
       right: 0px;
 	  left: 0px;
       font-size: 20px;
       color: WHITE;
-	  height: 15vt; /* 15% מגובה המסך */
+	  height: 10vh; /* 15% מגובה המסך */
      <!-- background: #7462f8;  -->
       padding: 10px;
 	  padding-top: 20px;
@@ -224,33 +215,48 @@
 	  z-index: 0;
     }
 	
+	
+	.containers {
+    display: flex;
+    justify-content: space-around; /* הצגת האלמנטים בשורה */
+    align-items: flex-start; /* יישור למעלה */
+    width: 45%;
+}
+
+#news-container, #shabbat-container {
+    width: 80%;
+    height: 40vh; /* שמירה על אותו גובה */
+    background: #526E93;
+	position: relative;
+	font-size: 30px;
+    border-top: 2px solid #154c79;
+    color: white;
+    text-align: center;
+    border-radius: 10px;
+    text-decoration: none; /* מסיר את הקו התחתון */
+    font-weight: bold; /* הדגשת הכותרת */
+	right: 5%;
+}
+
+	
+	
+	
 	/* גלובס*/
     #news-container {
-	 font-size: 30px;
+	 
 	 margin-top: 20px; /* מזיז את הכותרת כלפי מעלה */
-	 TOP: 350px;
-	 right: 20px;
-	 position: relative;
-     border-top: 2px solid #154c79;
-     padding-top: -80px; /* מצמצם רווח פנימי */
-	 color: white;
-     text-align: center;
-     background: #526E93;
-     width: 25%;
-     border-radius: 10px;
-     text-decoration: none; /* מסיר את הקו התחתון */
-     font-weight: bold; /* הדגשת הכותרת */
-     height: 45vt; /* 80% מגובה המסך */	     
+   
     }
 
     #news-display {
-	display: fixed;
+	position: relative;
     margin: 20px 0px  0px  0px; /* top;right;bottom;left*/
     padding: 0px 0px  0px  0px ;  /* top;right;bottom;left*/
     line-height: 1.6; /* שים לב, ניתן לשנות את המספר לפי הצורך */
 	font-size: 20px;
 	background: #526E93;
-	height: 35vt; /* 80% מגובה המסך */
+    height:30%; /* 80% מגובה המסך */
+	
     }
 	
 
@@ -262,33 +268,19 @@
 	padding-top:10px;
 	padding-bottom: 10px;
 	border-radius: 10px 10px 0 0; /* רדיוס רק בפינות העליונות */
-	text-decoration:center ;
 	text-align: center;
-	height: 10vt; /* 80% מגובה המסך */
-	line-height: 10vt;
+	height: 7vh; /* 80% מגובה המסך */
+	line-height: 7vh;
+	position: relative;
 	
 }
 /*זמני כניסת שבת*/
 
-
-
-        #shabbat-container {
-	 font-size: 30px;
+     #shabbat-container {
+	
 	 margin-top: 20px; /* מזיז את הכותרת כלפי מעלה */
-	 TOP: 350px;
-	 right: 35%;
-	 position: relative;
-     border-top: 2px solid #154c79;
-     padding-top: -80px; /* מצמצם רווח פנימי */
-	 color: white;
-     text-align: center;
-     width: 25%;
-     border-radius: 10px;
-     text-decoration: none; /* מסיר את הקו התחתון */
-     font-weight: bold; /* הדגשת הכותרת */
-     height: 45vt; /* 80% מגובה המסך */	
-	 border-radius: 10px ; /* רדיוס רק בפינות העליונות */
-	 background: #526E93;    
+	 right: 33%;
+	    
 	 
     }
 
@@ -301,22 +293,23 @@
 	padding-top:10px;
 	padding-bottom: 10px;
 	border-radius: 10px 10px 0 0; /* רדיוס רק בפינות העליונות */
-	text-decoration:center ;
 	text-align: center;
-	height: 10vt; /* 80% מגובה המסך */
-	line-height: 10vt;
-	
+	height: 7vh; /* 80% מגובה המסך */
+	line-height: 7vh;
+	 position: relative;
         }
 
         /* תוכן זמני שבת */
         #shabbat-display {
-	display: fixed;
+	position: relative;
     margin: 20px 0px  0px  0px; /* top;right;bottom;left*/
     padding: 0px 0px  0px  0px ;  /* top;right;bottom;left*/
     line-height: 1.6; /* שים לב, ניתן לשנות את המספר לפי הצורך */
-	font-size: 25px;
+	font-size: 20px;
 	background: #526E93;
-	height: 35vt; /* 80% מגובה המסך */
+	height:30%; /* 80% מגובה המסך */
+
+    }
   
   </style>
 </head>
@@ -424,7 +417,7 @@
 <div class="weather-widget"> 
     <!-- כאן הקוד של הווידג'ט של מזג האוויר -->
 	
-	  <a class="weatherwidget-io" style="width: 60%; height: 15vt; TOP: 120px; border-radius: 10px ;"
+	  <a class="weatherwidget-io" style="width: 60%; height: 15vh; TOP: 0px; border-radius: 10px ;"
 href="https://forecast7.com/he/31d8034d66/ashdod/" data-label_1="ASHDOD" data-label_2="WEATHER" data-theme="original" >ASHDOD WEATHER</a>
 <script>
 !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);
@@ -434,7 +427,7 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
 
 </div>
 
-<div class="globes-title"></div>
+<div class="containers">
 
 <div id="news-container">
     <h2>גלובס</h2>
@@ -553,14 +546,14 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
     </script>
 
 
-
+</div>
 
 <!-- אזור הצגת המבזקים -->
 <div class="news-ticker-wrapper">
-  <img src="images/news-icon.png" alt="מבזקי חדשות" class="ticker-image"> <!-- תמונה קבועה -->
+  <img src="images/news-icon.png" alt="מבזקי חדשות" class="ticker-image">
   <div id="newsTicker">
-    <span class="news-time">00:00</span> <!-- הצגת שעת הפרסום -->
-    <span class="news-title">טוען חדשות...</span> <!-- הצגת הכותרת -->
+    <span class="news-time">00:00</span>
+    <span class="news-title"><a href="#">טוען חדשות...</a></span>
   </div>
 </div>
 
