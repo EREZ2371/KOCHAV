@@ -564,6 +564,9 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
 
  <script>
 
+let newsItems = []; // מערך לאחסון המבזקים
+let currentNewsIndex = 0; // אינדקס להצגת המבזק הנוכחי
+
 async function fetchWallaBreakingNews() {
     try {
         const url = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://rss.walla.co.il/feed/22')}`;
@@ -589,22 +592,55 @@ async function fetchWallaBreakingNews() {
 
             const title = item.querySelector("title")?.textContent || "ללא כותרת";
             const pubDate = item.querySelector("pubDate")?.textContent || "";
-            const date = new Date(pubDate);
+            let date = new Date(pubDate);
 
-            // המרה לזמן ישראל (UTC+2 בחורף, UTC+3 בקיץ)
-            const israelTime = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
+            console.log("תאריך מקורי מה-RSS:", pubDate, "אובייקט Date:", date);
 
-            const hours = israelTime.getHours().toString().padStart(2, '0');
-            const minutes = israelTime.getMinutes().toString().padStart(2, '0');
+            // המרת הזמן לזמן ישראל
+            const israelTime = new Intl.DateTimeFormat('en-US', { 
+                timeZone: 'Asia/Jerusalem', 
+                hour: 'numeric', 
+                minute: 'numeric', 
+                second: 'numeric', 
+                hour12: false 
+            }).format(date);
+
+            console.log("זמן ישראל:", israelTime);
+
+            // זיהוי אם זה שעון קיץ או חורף
+            const isDaylightSavingTime = (date.getTimezoneOffset() < new Date(date.getFullYear(), 0, 1).getTimezoneOffset());
+
+            // חישוב הזמן של 2 שעות פחות בשעון חורף ו-3 שעות בשעון קיץ
+            const hoursToSubtract = isDaylightSavingTime ? 3 : 2;
+            date.setHours(date.getHours() - hoursToSubtract); // הפחתת שעות בהתאם לשעון הקיץ או החורף
+
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
 
             newsItems.unshift({ time: formattedTime, title });
         });
 
         console.log("מבזקים שהתקבלו:", newsItems);
-        displayNews();
+        displayNews(); // קריאה לפונקציה לאחר עדכון המבזקים
     } catch (error) {
         console.error("שגיאה בטעינת מבזקי החדשות:", error);
+    }
+}
+
+// מציג את המבזק הנוכחי ומתקדם לזה שאחריו בלולאה
+function displayNews() {
+    if (newsItems.length === 0) return;
+
+    const newsTicker = document.getElementById('newsTicker');
+    if (newsTicker) {
+        newsTicker.innerHTML = `
+            <span class="news-time">${newsItems[currentNewsIndex].time}</span>
+            <span class="news-title">${newsItems[currentNewsIndex].title}</span>
+        `;
+
+        // מעבר למבזק הבא
+        currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
     }
 }
 
