@@ -440,67 +440,62 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let newsItems = [];  // מערך לאחסון פרטי החדשות
-        let currentIndex = 0;  // אינדקס שמייצג את החדשה הנוכחית
-        const displayElement = document.getElementById("news-display");  // אלמנט ה-HTML שבו יופיעו החדשות
+document.addEventListener("DOMContentLoaded", function () {
+    let newsItems = [];  // מערך לאחסון פרטי החדשות
+    let currentIndex = 0;  // אינדקס שמייצג את החדשה הנוכחית
+    const displayElement = document.getElementById("news-display");  // אלמנט ה-HTML שבו יופיעו החדשות
 
-        // שליחת בקשה לשרת שמחזיר את נתוני ה-RSS
-        fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.globes.co.il/webservice/rss/rssfeeder.asmx/FeederNode?iID=2'))
-            .then(response => response.json())  // המרת התגובה ל-JSON
-            .then(data => {
-                let parser = new DOMParser();  // יצירת אובייקט לניתוח XML
-                let xml = parser.parseFromString(data.contents, "text/xml");  // המרת התוכן ל-XML
-                let items = xml.querySelectorAll("item");  // חיפוש כל אלמנטי ה-"item" ב-XML
+    // שליחת בקשה לשרת שמחזיר את נתוני ה-RSS
+    fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.globes.co.il/webservice/rss/rssfeeder.asmx/FeederNode?iID=2'))
+        .then(response => response.json())  // המרת התגובה ל-JSON
+        .then(data => {
+            let parser = new DOMParser();  // יצירת אובייקט לניתוח XML
+            let xml = parser.parseFromString(data.contents, "text/xml");  // המרת התוכן ל-XML
+            let items = xml.querySelectorAll("item");  // חיפוש כל אלמנטי ה-"item" ב-XML
 
-                // לולאה שמסננת את 20 החדשות הראשונות ומוסיפה אותן למערך
-                items.forEach((item, index) => {
-                    if (index < 20) {  // מגביל ל-20 פריטים
-                        newsItems.push({
-                            title: item.querySelector("title").textContent,  // כותרת החדשה
-                            link: item.querySelector("link").textContent  // קישור לכתבה המלאה
-                        });
-                    }
-                });
-
-                // אם נמצאו חדשות, מתחילים להציג את החדשות
-                if (newsItems.length > 0) {
-                    updateNews();  // הצגת החדשות הראשונה
-                    setInterval(updateNews, 10000);  // החלפת הידיעה כל 10 שניות
-                } else {
-                    displayElement.textContent = "לא נמצאו חדשות.";  // הודעת שגיאה אם לא נמצאו חדשות
+            // לולאה שמסננת את 20 החדשות הראשונות ומוסיפה אותן למערך
+            items.forEach((item, index) => {
+                if (index < 20) {  // מגביל ל-20 פריטים
+                    newsItems.push({
+                        title: item.querySelector("title").textContent,  // כותרת החדשה
+                        link: item.querySelector("link").textContent  // קישור לכתבה המלאה
+                    });
                 }
-            })
-            .catch(error => {  // טיפול בשגיאות
-                console.error("Error fetching news:", error);  // הדפסת השגיאה בקונסול
-                displayElement.textContent = "שגיאה בטעינת החדשות.";  // הודעת שגיאה למשתמש
             });
 
-        // פונקציה להציג את החדשות בצורה מחזורית
-        function updateNews() {
-            if (newsItems.length > 0) {  // אם יש חדשות
-                // בחר את החדשה הנוכחית והבאה
-                let news1 = newsItems[currentIndex];
-                let news2 = newsItems[(currentIndex + 1) % newsItems.length];
-
-                // קבלת השעה הנוכחית בפורמט HH.MM
-                let currentTime = new Date();
-                let hours = currentTime.getHours().toString().padStart(2, '0');  // קבלת השעה עם שני תווים
-                let minutes = currentTime.getMinutes().toString().padStart(2, '0');  // קבלת הדקות עם שני תווים
-                let formattedTime = `${hours}:${minutes}`;  // פורמט השעה "HH.MM"
-
-                // הצגת השעה לפני כותרת הידיעה
-                displayElement.innerHTML = `
-                    <p>${formattedTime}  ${news1.title}</p>
-                    <p>${formattedTime}  ${news2.title}</p>
-                `; 
-
-                displayElement.style.textDecoration = "none";  // הסרת קו תחתון מהכותרות
-                currentIndex = (currentIndex + 2) % newsItems.length;  // עדכון אינדקס החדשות (עובר 2 ידיעות קדימה)
+            // אם נמצאו חדשות, מתחילים להציג את החדשות
+            if (newsItems.length > 0) {
+                updateNews();  // הצגת החדשות הראשונה
+                setInterval(updateNews, 10000);  // החלפת הידיעה כל 10 שניות
+            } else {
+                displayElement.textContent = "לא נמצאו חדשות.";  // הודעת שגיאה אם לא נמצאו חדשות
             }
+        })
+        .catch(error => {  // טיפול בשגיאות
+            console.error("Error fetching news:", error);  // הדפסת השגיאה בקונסול
+            displayElement.textContent = "שגיאה בטעינת החדשות.";  // הודעת שגיאה למשתמש
+        });
+
+    // פונקציה להציג את החדשות בצורה מחזורית
+    function updateNews() {
+        if (newsItems.length > 0) {  // אם יש חדשות
+            let news = newsItems[currentIndex];  // בחירת הידיעה הנוכחית
+
+            // קבלת השעה הנוכחית
+            let currentTime = new Date();
+            let hours = currentTime.getHours().toString().padStart(2, '0');  
+            let minutes = currentTime.getMinutes().toString().padStart(2, '0');  
+            let formattedTime = `${hours}:${minutes}`;  
+
+            // הצגת השעה לפני כותרת הידיעה
+            displayElement.innerHTML = `<p>${formattedTime}  ${news.title}</p>`;
+
+            // עדכון אינדקס החדשות (מעבר לידיעה הבאה)
+            currentIndex = (currentIndex + 1) % newsItems.length;
         }
-		
-    });
+    }
+});
+
 </script>
 
 
@@ -562,8 +557,7 @@ js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.inser
   </div>
 </div>
 
- <script>
-
+<script>
 let newsItems = []; // מערך לאחסון המבזקים
 let currentNewsIndex = 0; // אינדקס להצגת המבזק הנוכחי
 
@@ -611,7 +605,7 @@ async function fetchWallaBreakingNews() {
             const isDaylightSavingTime = (date.getTimezoneOffset() < new Date(date.getFullYear(), 0, 1).getTimezoneOffset());
 
             // חישוב הזמן של 2 שעות פחות בשעון חורף ו-3 שעות בשעון קיץ
-            const hoursToSubtract = isDaylightSavingTime ? 3 : 2;
+            const hoursToSubtract = isDaylightSavingTime ? 4 : 3; // המשתנה הראשון זה שעון קיץ והשני שעון חורף
             date.setHours(date.getHours() - hoursToSubtract); // הפחתת שעות בהתאם לשעון הקיץ או החורף
 
             const hours = date.getHours().toString().padStart(2, '0');
@@ -652,7 +646,9 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
- </script>
+
+</script>
+
 
 
 
