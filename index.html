@@ -334,9 +334,9 @@
 <script>
     let currentImageIndex = 0; // אינדקס התמונה הנוכחית
 
-    // פונקציה להוריד את רשימת התמונות מקובץ PHP
+    // פונקציה להוריד את רשימת התמונות מקובץ JSON
     function fetchImageList() {
-        fetch('getImages.php') // קריאה לקובץ ה-PHP שמחזיר תמונות
+        fetch('images.json') // קריאה לקובץ ה-JSON שמחזיר את רשימת התמונות
             .then(response => response.json()) // המרת התשובה ל-JSON
             .then(data => {
                 console.log(data.images); // הצגת רשימת התמונות
@@ -398,6 +398,7 @@
     // עדכון התמונות כל 20 שניות
     setInterval(fetchImageList, 20000);
 </script>
+
 
 
 
