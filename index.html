@@ -156,7 +156,6 @@
 
 
 
-	
 	.side-image {
      position: fixed;
      top: 20px; /* מרווח של 100 פיקסלים מהחלק העליון */
@@ -165,17 +164,17 @@
      height: 95%; /* גובה המסך פחות 100 פיקסלים מלמעלה ו-100 מלמטה */
      object-fit: cover; /* מוודא שהתמונה תתאים בתוך האזור */
      opacity: 0;
-     transition: opacity 1s ease-in-out;
+     transition: opacity 3s ease-in-out;
      border-radius: 10px; /* רדיוס פינות של 10 פיקסלים */
      z-index: 2;
-	 display: none;
+	 display: block; /* נראית תמיד, לא מוסתרת ב- display:none */
 }
-
-    .active {
-      opacity: 1;
-	  display: block;
-    }
 	
+	    /* מיכל התמונה */
+    .image-container {
+      display: flex;  
+
+    }
 
     /* סגנון לתאריך ושעה מתחת לתמונה הנוספת */ 
     .datetime {
@@ -328,60 +327,79 @@
   
 
 <div class="image-container">
-    <img class="side-image" src="./images/1.jpg" alt="תמונה 1" loading="lazy" onerror="this.remove()">
-    <img class="side-image" src="./images/2.jpg" alt="תמונה 2" loading="lazy" onerror="this.remove()">
+    <img class="side-image" id="image1" src="" alt="תמונה 1" loading="lazy">
+    <img class="side-image" id="image2" src="" alt="תמונה 2" loading="lazy">
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let currentIndex = 0;
+    let images = []; // מערך ריק שיתעדכן לפי התמונות שנמצאות בשרת
+    let currentImageIndex = 0;
+    let interval;
 
-        // פונקציה לבדוק ולהפעיל את התמונות כל 10 שניות
-        function checkImages() {
-            // בחירת כל האלמנטים של התמונות
-            let images = document.querySelectorAll('.side-image');
+    // פונקציה לשלוף את רשימת התמונות מהשרת
+    function fetchImageList() {
+        fetch("getImages.php") // בקשה לשרת לקבלת התמונות
+            .then(response => response.json()) // קבלת תשובה בפורמט JSON
+            .then(data => {
+                images = data; // עדכון מערך התמונות
+                checkImageCount(); // בדיקת כמות התמונות
+            })
+            .catch(error => console.error("שגיאה בטעינת התמונות:", error));
+    }
 
-            // סינון התמונות - שומר רק תמונות שנטענו בהצלחה
-            let loadedImages = Array.from(images).filter(img => img.complete && img.naturalWidth > 0);
+    // פונקציה לבדוק את כמות התמונות
+    function checkImageCount() {
+        let imageCount = images.length;
+        const image1 = document.getElementById('image1');
+        const image2 = document.getElementById('image2');
 
-            // קביעת מספר התמונות שנטענו בהצלחה
-            let imageCount = loadedImages.length;
+        if (imageCount === 0) {
+            image1.style.display = 'none';
+            image2.style.display = 'none';
+        } else if (imageCount === 1) {
+            image1.src = images[0];
+            image1.style.display = 'block';
+            image2.style.display = 'none';
+            image1.style.opacity = 1;
+        } else if (imageCount >= 2) {
+            image1.src = images[0];
+            image2.src = images[1];
+            image1.style.display = 'block';
+            image2.style.display = 'block';
 
-            // אם אין תמונות טעונות - לא עושים כלום
-            if (imageCount === 0) {
-                console.log("אין תמונות להצגה");
-            } 
-            // אם יש תמונה אחת בלבד - מציגים אותה בלי לבצע החלפה
-            else if (imageCount === 1) {
-                loadedImages[0].style.display = "block"; // הופך את התמונה לנראית
-                loadedImages[0].style.opacity = "1"; // מבצע מעבר עדין כדי שהתמונה תוצג
-            } 
-            // אם יש שתי תמונות - מפעילים את המעבר ביניהן כל 10 שניות
-            else if (imageCount === 2) {
-                loadedImages[0].classList.add('active'); // מסמן שהתמונה הראשונה מוצגת
-
-                setInterval(() => {
-                    // מסיר את המחלקה 'active' מהתמונה הנוכחית כדי להסתיר אותה
-                    loadedImages[currentIndex].classList.remove('active');
-
-                    // מחשב את האינדקס של התמונה הבאה
-                    currentIndex = (currentIndex + 1) % imageCount;
-
-                    // מוסיף את המחלקה 'active' לתמונה הבאה כדי להציג אותה
-                    loadedImages[currentIndex].classList.add('active');
-                }, 10000); // משך הזמן להחלפה - כל 10 שניות
+            if (!interval) {
+                displayImages();
             }
         }
+    }
 
-        // קורא לפונקציה הראשונה לאחר טעינת הדף
-        checkImages();
+    // פונקציה להציג את התמונות כל 10 שניות
+    function displayImages() {
+        interval = setInterval(() => {
+            const image1 = document.getElementById('image1');
+            const image2 = document.getElementById('image2');
 
-        // בודק מחדש כל 10 שניות
-        setInterval(checkImages, 60000); // כל 10 שניות
-    });
+            if (currentImageIndex === 0) {
+                image1.style.opacity = 1;
+                image2.style.opacity = 0;
+            } else {
+                image1.style.opacity = 0;
+                image2.style.opacity = 1;
+            }
+
+            currentImageIndex = (currentImageIndex + 1) % 2;
+        }, 10000); // כל 10 שניות
+    }
+
+    // קריאה ראשונית לבדוק את התמונות + הפעלה מחזורית כל 20 שניות
+    fetchImageList();
+    setInterval(fetchImageList, 20000); // קריאה כל 20 שניות לעדכון התמונות
 </script>
 
- 
+
+
+
+
  
   <!-- תאריך ושעה מתחת לתמונה הנוספת -->
   <div class="datetime">
