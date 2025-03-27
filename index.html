@@ -219,12 +219,16 @@
     }
 	
 	
-	.containers {
+.containers {
     display: flex;
-    justify-content: space-around; /* הצגת האלמנטים בשורה */
-    align-items: flex-start; /* יישור למעלה */
+    justify-content: space-around;
+    align-items: flex-start;
     width: 50VW;
+    box-sizing: border-box; /* וודא שהמרווחים לא משפיעים על רוחב האלמנט */
+    margin: 0; /* מסיר רווחים לא רצויים */
+    padding: 0; /* מסיר רווחים לא רצויים */
 }
+
 
 #news-container, #shabbat-container {
     width: 50VW;
