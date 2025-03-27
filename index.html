@@ -332,66 +332,53 @@
 </div>
 
 <script>
-    // רשימת התמונות בצורה סטטית
-    let images = [
-        './images/1.jpg', // עדכון לקובץ התמונה 1
-        './images/2.jpg'  // עדכון לקובץ התמונה 2
-    ]; 
+    let currentImageIndex = 0; // אינדקס התמונה הנוכחית
 
-    let currentImageIndex = 0;
-    let interval;
-
-    // פונקציה לבדוק אם התמונות נטענות כראוי
-    function checkImageLoaded(imgElement, src) {
-        return new Promise((resolve, reject) => {
-            imgElement.src = src;
-            imgElement.onload = () => resolve(true);
-            imgElement.onerror = () => reject(false);
-        });
+    // פונקציה להוריד את רשימת התמונות מקובץ JSON
+    function fetchImageList() {
+        fetch('https://erez2371.github.io/KOCHAV/images.json') // כתובת קובץ ה-JSON
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // המרת התגובה ל-JSON
+            })
+            .then(data => {
+                console.log(data.images); // הצגת רשימת התמונות
+                // עדכון התמונות
+                updateImages(data.images);
+            })
+            .catch(error => {
+                console.error('Error fetching images:', error);
+            });
     }
 
-    // פונקציה לבדוק את כמות התמונות ולהציג אותן
-    async function checkImageCount() {
-        let imageCount = images.length;
+    // פונקציה לעדכון התמונות בעמוד
+    function updateImages(images) {
         const image1 = document.getElementById('image1');
         const image2 = document.getElementById('image2');
 
-        // אם אין תמונות להציג
-        if (imageCount === 0) {
+        // אם יש תמונה אחת בלבד
+        if (images.length === 1) {
+            image1.src = images[0]; // הצגת התמונה היחידה
+            image2.style.display = 'none'; // הסתרת התמונה השנייה
+        }
+        // אם יש שתי תמונות
+        else if (images.length === 2) {
+            image1.src = images[0];
+            image2.src = images[1];
+            image2.style.display = 'block'; // הצגת התמונה השנייה
+            displayImages(images); // הצגת התמונות במחזוריות
+        } else {
+            // אם אין תמונות, הסתר את כל התמונות
             image1.style.display = 'none';
             image2.style.display = 'none';
-        } 
-        // אם יש תמונה אחת בלבד
-        else if (imageCount === 1) {
-            const loaded = await checkImageLoaded(image1, images[0]);
-            if (loaded) {
-                image1.style.display = 'block';
-                image1.style.opacity = 1;
-                image2.style.display = 'none'; // הסתרת התמונה השנייה
-            } else {
-                console.error("תמונה 1 לא נטענה כראוי");
-            }
-        } 
-        // אם יש יותר מתמונה אחת
-        else if (imageCount >= 2) {
-            const loadedImage1 = await checkImageLoaded(image1, images[0]);
-            const loadedImage2 = await checkImageLoaded(image2, images[1]);
-            
-            if (loadedImage1 && loadedImage2) {
-                image1.style.display = 'block';
-                image2.style.display = 'block';
-                if (!interval) {
-                    displayImages();
-                }
-            } else {
-                console.error("לא הצלחנו לטעון את התמונות");
-            }
         }
     }
 
-    // פונקציה להציג את התמונות כל 10 שניות
-    function displayImages() {
-        interval = setInterval(() => {
+    // פונקציה להציג את התמונות במחזוריות
+    function displayImages(images) {
+        setInterval(() => {
             const image1 = document.getElementById('image1');
             const image2 = document.getElementById('image2');
 
@@ -403,14 +390,17 @@
                 image2.style.opacity = 1;
             }
 
-            currentImageIndex = (currentImageIndex + 1) % 2;
+            currentImageIndex = (currentImageIndex + 1) % images.length;
         }, 10000); // כל 10 שניות
     }
 
-    // קריאה ראשונית לבדוק את התמונות + הפעלה מחזורית כל 20 שניות
-    checkImageCount(); // קריאה ראשונית
-    setInterval(checkImageCount, 20000); // קריאה כל 20 שניות לעדכון התמונות
+    // קריאה ראשונית להורדת רשימת התמונות
+    fetchImageList();
+
+    // עדכון התמונות כל 20 שניות
+    setInterval(fetchImageList, 20000);
 </script>
+
 
 
 
