@@ -367,8 +367,9 @@
         }
         // אם יש שתי תמונות
         else if (images.length >= 2) {
-            image1.src = images[0];
-            image2.src = images[1];
+            image1.src = images[0]; // הצגת התמונה הראשונה
+            image2.src = images[1]; // הצגת התמונה השנייה
+            image1.style.display = 'block'; // הצגת התמונה הראשונה
             image2.style.display = 'block'; // הצגת התמונה השנייה
             displayImages(images); // הצגת התמונות במחזוריות
         }
@@ -398,6 +399,7 @@
     // עדכון התמונות כל 20 שניות
     setInterval(fetchImageList, 20000);
 </script>
+
 
 
 
