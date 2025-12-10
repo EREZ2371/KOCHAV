@@ -682,10 +682,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
+<!-- רענון אוטומטי כל חצי שעה עגולה -->
+<script>
+// פונקציה שמאתרת את זמן הרענון הקרוב (:00 או :30)
+function reloadOnHalfHour() {
 
+    const now = new Date();                       // לוקח את זמן המערכת
+    const minutes = now.getMinutes();             // דקות כרגע
+    const seconds = now.getSeconds();             // שניות כרגע
+    const ms = now.getMilliseconds();             // מילישניות כרגע
+
+    let minutesToNext;                            // חישוב כמה דקות נשארו לרענון הבא
+
+    if (minutes < 30) {
+        minutesToNext = 30 - minutes;             // לפני :30 → רענון ב־:30
+    } else {
+        minutesToNext = 60 - minutes;             // אחרי :30 → רענון ב־:00 הבא
+    }
+
+    // חישוב זמן מדויק עד הרענון הקרוב
+    const timeToNextHalfHour =
+        minutesToNext * 60 * 1000 -              // דקות → מ״ש
+        seconds * 1000 -                         // מנקה שניות
+        ms;                                      // מנקה מילישניות
+
+    console.log("הדף יתרענן בעוד:", timeToNextHalfHour / 1000, "שניות");
+
+    // מפעיל את הרענון כשמגיע הזמן
+    setTimeout(() => {
+        location.reload();                        // רענון הדף בפועל
+    }, timeToNextHalfHour);
+}
+
+// הפעלה אוטומטית כשעמוד נטען
+reloadOnHalfHour();
+</script>
 
 
 
   
 </body>
 </html>
+
