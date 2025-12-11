@@ -474,61 +474,84 @@ href="https://forecast7.com/he/31d8034d66/ashdod/" data-label_1="אשדוד" dat
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    let newsItems = [];  // מערך לאחסון פרטי החדשות
-    let currentIndex = 0;  // אינדקס שמייצג את החדשה הנוכחית
-    const displayElement = document.getElementById("news-display");  // אלמנט ה-HTML שבו יופיעו החדשות
 
-    // שליחת בקשה לשרת שמחזיר את נתוני ה-RSS
-    fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.globes.co.il/webservice/rss/rssfeeder.asmx/FeederNode?iID=2'))
-        .then(response => response.json())  // המרת התגובה ל-JSON
-        .then(data => {
-            let parser = new DOMParser();  // יצירת אובייקט לניתוח XML
-            let xml = parser.parseFromString(data.contents, "text/xml");  // המרת התוכן ל-XML
-            let items = xml.querySelectorAll("item");  // חיפוש כל אלמנטי ה-"item" ב-XML
+    let newsItems = [];            // מערך לאחסון החדשות
+    let currentIndex = 0;          // אינדקס להצגת הידיעה הנוכחית
+    const displayElement = document.getElementById("news-display"); // אלמנט התצוגה
 
-            // לולאה שמסננת את 20 החדשות הראשונות ומוסיפה אותן למערך
-            items.forEach((item, index) => {
-                if (index < 20) {  // מגביל ל-20 פריטים
-                    newsItems.push({
-                        title: item.querySelector("title").textContent,  // כותרת החדשה
-                        link: item.querySelector("link").textContent  // קישור לכתבה המלאה
-                    });
+    // כתובת RSS של גלובס
+    const rssUrl = "https://www.globes.co.il/webservice/rss/rssfeeder.asmx/FeederNode?iID=2";
+
+    // שימוש בפרוקסי AllOrigins כדי לעקוף CORS
+    const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl);
+
+    // פונקציה המביאה את נתוני החדשות
+    function fetchGlobesNews() {
+        fetch(proxy)
+            .then(response => response.json()) // מקבלים JSON מהפרוקסי
+            .then(data => {
+
+                let parser = new DOMParser(); 
+                let xml = parser.parseFromString(data.contents, "text/xml"); // המרת XML
+
+                let items = xml.querySelectorAll("item");
+
+                if (!items.length) {
+                    displayElement.textContent = "לא נמצאו חדשות.";
+                    return;
                 }
+
+                // איפוס המערך
+                newsItems = [];
+
+                // שמירת 20 כותרות בלבד
+                items.forEach((item, index) => {
+                    if (index < 20) {
+                        newsItems.push({
+                            title: item.querySelector("title")?.textContent || "ללא כותרת",
+                            link: item.querySelector("link")?.textContent || "#"
+                        });
+                    }
+                });
+
+                // התחלת הצגה
+                updateNews();
+            })
+            .catch(error => {
+                console.error("גלובס — שגיאה:", error);
+                displayElement.textContent = "שגיאה בטעינת החדשות.";
             });
-
-            // אם נמצאו חדשות, מתחילים להציג את החדשות
-            if (newsItems.length > 0) {
-                updateNews();  // הצגת החדשות הראשונה
-                setInterval(updateNews, 10000);  // החלפת הידיעה כל 10 שניות
-            } else {
-                displayElement.textContent = "לא נמצאו חדשות.";  // הודעת שגיאה אם לא נמצאו חדשות
-            }
-        })
-        .catch(error => {  // טיפול בשגיאות
-            console.error("Error fetching news:", error);  // הדפסת השגיאה בקונסול
-            displayElement.textContent = "שגיאה בטעינת החדשות.";  // הודעת שגיאה למשתמש
-        });
-
-    // פונקציה להציג את החדשות בצורה מחזורית
-    function updateNews() {
-        if (newsItems.length > 0) {  // אם יש חדשות
-            let news = newsItems[currentIndex];  // בחירת הידיעה הנוכחית
-
-            // קבלת השעה הנוכחית
-            let currentTime = new Date();
-            let hours = currentTime.getHours().toString().padStart(2, '0');  
-            let minutes = currentTime.getMinutes().toString().padStart(2, '0');  
-            let formattedTime = `${hours}:${minutes}`;  
-
-            // הצגת השעה לפני כותרת הידיעה
-            displayElement.innerHTML = `<p>${formattedTime}  ${news.title}</p>`;
-
-            // עדכון אינדקס החדשות (מעבר לידיעה הבאה)
-            currentIndex = (currentIndex + 1) % newsItems.length;
-        }
     }
-});
 
+    // מציג ידיעה אחת בכל פעם
+    function updateNews() {
+        if (newsItems.length === 0) return;
+
+        let news = newsItems[currentIndex];
+
+        // זמן נוכחי להצגה לפני החדשה
+        let now = new Date();
+        let timeString =
+            now.getHours().toString().padStart(2, '0') + ":" +
+            now.getMinutes().toString().padStart(2, '0');
+
+        displayElement.innerHTML =
+            `<p>${timeString} — <a href="${news.link}" target="_blank" style="color:white;text-decoration:none;">${news.title}</a></p>`;
+
+        // מעבר לידיעה הבאה
+        currentIndex = (currentIndex + 1) % newsItems.length;
+    }
+
+    // טעינה ראשונית
+    fetchGlobesNews();
+
+    // רענון נתונים כל 10 דקות
+    setInterval(fetchGlobesNews, 600000);
+
+    // החלפת ידיעה כל 10 שניות
+    setInterval(updateNews, 10000);
+
+});
 </script>
 
 
@@ -723,4 +746,5 @@ reloadOnHalfHour();
   
 </body>
 </html>
+
 
