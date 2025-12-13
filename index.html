@@ -479,11 +479,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentIndex = 0;
     const display = document.getElementById("news-display");
 
-    const RSS_URL =
-        "https://news.google.com/rss/search?q=site:ynet.co.il&hl=he&gl=IL&ceid=IL:he";
+    const RSS_URL = "https://news.google.com/rss/search?q=site:ynet.co.il&hl=he&gl=IL&ceid=IL:he";
 
     fetch(RSS_URL)
-        .then(response => response.text())
+        .then(res => res.text())
         .then(xmlText => {
 
             const parser = new DOMParser();
@@ -497,8 +496,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             newsItems = [];
 
-            items.forEach((item, index) => {
-                if (index < 20) {
+            items.forEach((item, i) => {
+                if (i < 20) {
                     newsItems.push({
                         title: item.querySelector("title")?.textContent || "",
                         link: item.querySelector("link")?.textContent || "#"
@@ -510,8 +509,8 @@ document.addEventListener("DOMContentLoaded", function () {
             setInterval(showNews, 10000);
 
         })
-        .catch(error => {
-            console.error("RSS error:", error);
+        .catch(err => {
+            console.error("שגיאת RSS:", err);
             display.textContent = "שגיאה בטעינת החדשות";
         });
 
@@ -536,6 +535,9 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
+
+
+
 </div>
 
 <!-- אזור הצגת המבזקים -->
@@ -548,95 +550,79 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 
 <script>
-let newsItems = []; // מערך לאחסון המבזקים
-let currentNewsIndex = 0; // אינדקס להצגת המבזק הנוכחי
+document.addEventListener("DOMContentLoaded", function () {
 
-async function fetchWallaBreakingNews() {
-    try {
-        const url = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://rss.walla.co.il/feed/22')}`;
-        console.log("Fetching URL:", url);
+    let newsItems = [];        // מערך לאחסון הכתבות
+    let currentIndex = 0;      // אינדקס לכתבה הנוכחית
+    const display = document.getElementById("news-display"); // אזור התצוגה
 
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('שגיאה בשליפת הנתונים');
+    // RSS רשמי של Yahoo News (עובד ב-GitHub Pages)
+    const RSS_URL = "https://news.yahoo.com/rss/";
 
-        const text = await response.text();
-        console.log("Raw XML:", text);
+    // שליפת ה-RSS
+    fetch(RSS_URL)
+        .then(res => res.text())              // המרת התשובה לטקסט
+        .then(xmlText => {
 
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(text, "text/xml");
+            const parser = new DOMParser();   // יצירת parser ל-XML
+            const xml = parser.parseFromString(xmlText, "text/xml");
+            const items = xml.querySelectorAll("item");
 
-        const items = xmlDoc.querySelectorAll("item");
-        if (items.length === 0) {
-            throw new Error("לא נמצאו מבזקים בקובץ ה-XML");
-        }
+            // אם אין כתבות
+            if (!items.length) {
+                display.textContent = "לא נמצאו חדשות";
+                return;
+            }
 
-        newsItems = [];
-        items.forEach((item, index) => {
-            if (index >= 10) return;
+            newsItems = [];
 
-            const title = item.querySelector("title")?.textContent || "ללא כותרת";
-            const pubDate = item.querySelector("pubDate")?.textContent || "";
-            let date = new Date(pubDate);
+            // שמירת עד 20 כתבות
+            items.forEach((item, i) => {
+                if (i < 20) {
+                    let title = item.querySelector("title")?.textContent || "";
+                    let link  = item.querySelector("link")?.textContent || "#";
 
-            console.log("תאריך מקורי מה-RSS:", pubDate, "אובייקט Date:", date);
+                    // ניקוי סיומת "Yahoo News" מהכותרת
+                    title = title.replace(" - Yahoo News", "").trim();
 
-            // המרת הזמן לזמן ישראל
-            const israelTime = new Intl.DateTimeFormat('en-US', { 
-                timeZone: 'Asia/Jerusalem', 
-                hour: 'numeric', 
-                minute: 'numeric', 
-                second: 'numeric', 
-                hour12: false 
-            }).format(date);
+                    newsItems.push({ title, link });
+                }
+            });
 
-            console.log("זמן ישראל:", israelTime);
-
-            // זיהוי אם זה שעון קיץ או חורף
-            const isDaylightSavingTime = (date.getTimezoneOffset() < new Date(date.getFullYear(), 0, 1).getTimezoneOffset());
-
-            // חישוב הזמן של 2 שעות פחות בשעון חורף ו-3 שעות בשעון קיץ
-            const hoursToSubtract = isDaylightSavingTime ? 4 : 3; // המשתנה הראשון זה שעון קיץ והשני שעון חורף
-            date.setHours(date.getHours() - hoursToSubtract); // הפחתת שעות בהתאם לשעון הקיץ או החורף
-
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const formattedTime = `${hours}:${minutes}`;
-
-            newsItems.unshift({ time: formattedTime, title });
+            showNews();                       // הצגת הכתבה הראשונה
+            setInterval(showNews, 10000);     // החלפה כל 10 שניות
+        })
+        .catch(err => {
+            console.error("שגיאת RSS:", err);
+            display.textContent = "שגיאה בטעינת החדשות";
         });
 
-        console.log("מבזקים שהתקבלו:", newsItems);
-        displayNews(); // קריאה לפונקציה לאחר עדכון המבזקים
-    } catch (error) {
-        console.error("שגיאה בטעינת מבזקי החדשות:", error);
-    }
-}
+    // פונקציה להצגת כתבה
+    function showNews() {
+        if (!newsItems.length) return;
 
-// מציג את המבזק הנוכחי ומתקדם לזה שאחריו בלולאה
-function displayNews() {
-    if (newsItems.length === 0) return;
+        const news = newsItems[currentIndex];
+        const now = new Date();
 
-    const newsTicker = document.getElementById('newsTicker');
-    if (newsTicker) {
-        newsTicker.innerHTML = `
-            <span class="news-time">${newsItems[currentNewsIndex].time}</span>
-            <span class="news-title">${newsItems[currentNewsIndex].title}</span>
+        const time =
+            now.getHours().toString().padStart(2, '0') + ":" +
+            now.getMinutes().toString().padStart(2, '0');
+
+        display.innerHTML = `
+            <p>
+              ${time} —
+              <a href="${news.link}" target="_blank"
+                 style="color:white;text-decoration:none;">
+                 ${news.title}
+              </a>
+            </p>
         `;
 
-        // מעבר למבזק הבא
-        currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
+        // מעבר לכתבה הבאה
+        currentIndex = (currentIndex + 1) % newsItems.length;
     }
-}
 
-// קריאה ראשונית ושליפה כל 10 דקות
-document.addEventListener("DOMContentLoaded", function () {
-    fetchWallaBreakingNews();
-    setInterval(fetchWallaBreakingNews, 600000); // 10 דקות
-    setInterval(displayNews, 10000); // שינוי מבזק כל 10 שניות
 });
-
-
-
 </script>
 
 
