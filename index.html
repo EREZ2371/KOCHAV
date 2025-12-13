@@ -475,51 +475,46 @@ href="https://forecast7.com/he/31d8034d66/ashdod/" data-label_1="אשדוד" dat
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    let newsItems = [];                 // מערך לאחסון החדשות
-    let currentIndex = 0;               // אינדקס לידיעה הנוכחית
+    let newsItems = [];
+    let currentIndex = 0;
     const display = document.getElementById("news-display");
 
-    // RSS של YNET
-    const RSS_URL = "https://www.ynet.co.il/Integration/StoryRss2.xml";
+    const RSS_URL =
+        "https://news.google.com/rss/search?q=site:ynet.co.il&hl=he&gl=IL&ceid=IL:he";
 
-    // Proxy לעקיפת CORS
-    const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(RSS_URL);
+    fetch(RSS_URL)
+        .then(response => response.text())
+        .then(xmlText => {
 
-    // טעינת החדשות
-    function fetchYnetNews() {
-        fetch(PROXY_URL)
-            .then(response => response.text())   // RSS חוזר כ-XML
-            .then(xmlText => {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, "text/xml");
+            const items = xml.querySelectorAll("item");
 
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(xmlText, "text/xml");
-                const items = xml.querySelectorAll("item");
+            if (!items.length) {
+                display.textContent = "לא נמצאו חדשות";
+                return;
+            }
 
-                if (!items.length) {
-                    display.textContent = "לא נמצאו חדשות";
-                    return;
+            newsItems = [];
+
+            items.forEach((item, index) => {
+                if (index < 20) {
+                    newsItems.push({
+                        title: item.querySelector("title")?.textContent || "",
+                        link: item.querySelector("link")?.textContent || "#"
+                    });
                 }
-
-                newsItems = [];
-
-                items.forEach((item, index) => {
-                    if (index < 20) {
-                        newsItems.push({
-                            title: item.querySelector("title")?.textContent || "ללא כותרת",
-                            link: item.querySelector("link")?.textContent || "#"
-                        });
-                    }
-                });
-
-                showNews(); // הצגת ידיעה ראשונה
-            })
-            .catch(error => {
-                console.error("YNET error:", error);
-                display.textContent = "שגיאה בטעינת חדשות YNET";
             });
-    }
 
-    // הצגת ידיעה
+            showNews();
+            setInterval(showNews, 10000);
+
+        })
+        .catch(error => {
+            console.error("RSS error:", error);
+            display.textContent = "שגיאה בטעינת החדשות";
+        });
+
     function showNews() {
         if (!newsItems.length) return;
 
@@ -537,63 +532,8 @@ document.addEventListener("DOMContentLoaded", function () {
         currentIndex = (currentIndex + 1) % newsItems.length;
     }
 
-    // טעינה ראשונית
-    fetchYnetNews();
-
-    // רענון נתונים כל 10 דקות
-    setInterval(fetchYnetNews, 600000);
-
-    // החלפת ידיעה כל 10 שניות
-    setInterval(showNews, 10000);
-
 });
 </script>
-
-
-
-
-    <div id="shabbat-container">
-        <h2> שבת - <span id="parasha">טוען...</span> </h2>
-        <div id="shabbat-display">
-            <p>🕯️ כניסת שבת: <span id="candles-time">טוען...</span></p>
-            <p>✨ יציאת שבת: <span id="havdalah-time">טוען...</span></p>
-        </div>
-    </div>
-
-    <script>
-        async function fetchShabbatTimes() {
-            const city = 'Ashdod';
-            const country = 'IL';
-            const url = `https://www.hebcal.com/shabbat/?cfg=json&city=${city}&country=${country}&M=on`;
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-
-                // חיפוש פרשת השבוע
-                const parashaItem = data.items.find(item => item.category === 'parashat');
-                const parasha = parashaItem ? parashaItem.hebrew : "לא נמצא";
-
-                // חיפוש זמני כניסת ויציאת שבת
-                const candlesItem = data.items.find(item => item.category === 'candles');
-                const havdalahItem = data.items.find(item => item.category === 'havdalah');
-
-                const candlesTime = candlesItem ? new Date(candlesItem.date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : "לא נמצא";
-                const havdalahTime = havdalahItem ? new Date(havdalahItem.date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : "לא נמצא";
-
-                // עדכון התצוגה
-                document.getElementById('parasha').textContent = parasha;
-                document.getElementById('candles-time').textContent = candlesTime;
-                document.getElementById('havdalah-time').textContent = havdalahTime;
-
-            } catch (error) {
-                console.error('שגיאה בטעינת הנתונים:', error);
-                document.getElementById('shabbat-display').innerHTML = 'שגיאה בטעינת הנתונים.';
-            }
-        }
-
-        fetchShabbatTimes();
-    </script>
 
 
 </div>
