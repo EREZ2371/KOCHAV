@@ -252,11 +252,11 @@
 	/* גלובס*/
     #news-container {
 	 
-	 margin-top: 20px; /* מזיז את הכותרת כלפי מעלה */
-	 margin-right: 10px;
-	     border: none; /* מסיר גבולות */
+	margin-top: 20px; /* מזיז את הכותרת כלפי מעלה */
+	margin-right: 10px;
+	border: none; /* מסיר גבולות */
     box-shadow: none; /* מסיר צלליות */
-   
+	   
     }
 
     #news-display {
@@ -283,17 +283,37 @@
 	height: 7vh; /* 80% מגובה המסך */
 	line-height: 7vh;
 	position: relative;
-	    border: none; /* מסיר גבולות */
+	border: none; /* מסיר גבולות */
     box-shadow: none; /* מסיר צלליות */
 	
 }
+
+/* הלוגו עצמו */
+#news-container .ticker-image {
+    display: inline-block;
+    height: 7vh;               /* גובה הלוגו */
+}
+
+/* מיכל הרקע שמאחורי התמונה בלבד */
+#news-container .logo-background {
+    width: 100%;             /* רוחב מלא */
+    background: #3589b4;     /* צבע רקע */
+    text-align: center;      /* ממרכז את התמונה */
+    padding: 10px 0;         /* גובה הפס */
+    border-radius: 10px 10px 0 0; /* פינות עליונות מעוגלות */
+    box-sizing: border-box;
+		height: 24%; /* 80% מגובה המסך */
+
+}
+
+
 /*זמני כניסת שבת*/
 
      #shabbat-container {
 	
 	 margin-top: 20px; /* מזיז את הכותרת כלפי מעלה */
 	 right: 10VW;
-	     border: none; /* מסיר גבולות */
+	 border: none; /* מסיר גבולות */
     box-shadow: none; /* מסיר צלליות */
 	    
 	 
@@ -465,12 +485,23 @@ href="https://forecast7.com/he/31d8034d66/ashdod/" data-label_1="אשדוד" dat
 </div>
 
 
+
 <div class="containers">
 
+<!--<div id="news-container">
+ <img src="images/ynet_logo.png" alt="Y N E T" class="ticker-image">
+  <!--  <h2>Y N E T</h2> -->
+   <!-- <div id="news-display">טוען חדשות...</div>
+</div> -->
+
 <div id="news-container">
-    <h2>Y N E T</h2>
+    <div class="logo-background">
+        <img src="images/ynet_logo.png" alt="Y N E T" class="ticker-image">
+    </div>
     <div id="news-display">טוען חדשות...</div>
 </div>
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -479,35 +510,25 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentIndex = 0;
     const display = document.getElementById("news-display");
 
-    const RSS_URL = "https://news.google.com/rss/search?q=site:ynet.co.il&hl=he&gl=IL&ceid=IL:he";
+    const RSS_URL = "https://api.rss2json.com/v1/api.json?rss_url=" +
+        encodeURIComponent("https://www.ynet.co.il/Integration/StoryRss2.xml");
 
     fetch(RSS_URL)
-        .then(res => res.text())
-        .then(xmlText => {
-
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlText, "text/xml");
-            const items = xml.querySelectorAll("item");
-
-            if (!items.length) {
+        .then(res => res.json())
+        .then(data => {
+            if (!data.items || !data.items.length) {
                 display.textContent = "לא נמצאו חדשות";
                 return;
             }
 
-            newsItems = [];
-
-            items.forEach((item, i) => {
-                if (i < 20) {
-                    newsItems.push({
-                        title: item.querySelector("title")?.textContent || "",
-                        link: item.querySelector("link")?.textContent || "#"
-                    });
-                }
-            });
+            // שמירת עד 20 כתבות
+            newsItems = data.items.slice(0, 20).map(item => ({
+                title: item.title,
+                link: item.link
+            }));
 
             showNews();
             setInterval(showNews, 10000);
-
         })
         .catch(err => {
             console.error("שגיאת RSS:", err);
@@ -517,24 +538,77 @@ document.addEventListener("DOMContentLoaded", function () {
     function showNews() {
         if (!newsItems.length) return;
 
-        const news = newsItems[currentIndex];
         const now = new Date();
         const time =
             now.getHours().toString().padStart(2, '0') + ":" +
             now.getMinutes().toString().padStart(2, '0');
 
-        display.innerHTML =
-            `<p>${time} — <a href="${news.link}" target="_blank"
-            style="color:white;text-decoration:none;">
-            ${news.title}</a></p>`;
+        // בחר שתי כתבות
+        const firstNews = newsItems[currentIndex];
+        const secondNews = newsItems[(currentIndex + 1) % newsItems.length];
 
-        currentIndex = (currentIndex + 1) % newsItems.length;
+        display.innerHTML =
+            `<p>${time} — <a href="${firstNews.link}" target="_blank" style="color:white;text-decoration:none;">
+            ${firstNews.title}</a></p>
+            <p>${time} — <a href="${secondNews.link}" target="_blank" style="color:white;text-decoration:none;">
+            ${secondNews.title}</a></p>`;
+
+        // קפיצה ב-2 כתבות במקום 1
+        currentIndex = (currentIndex + 2) % newsItems.length;
     }
 
 });
 </script>
 
 
+
+
+
+   <div id="shabbat-container">
+        <h2> שבת - <span id="parasha">טוען...</span> </h2>
+        <div id="shabbat-display">
+            <p>🕯️ כניסת שבת: <span id="candles-time">טוען...</span></p>
+            <p>✨ יציאת שבת: <span id="havdalah-time">טוען...</span></p>
+        </div>
+    </div>
+
+    <script>
+        async function fetchShabbatTimes() {
+            const city = 'Ashdod';
+            const country = 'IL';
+            const url = `https://www.hebcal.com/shabbat/?cfg=json&city=${city}&country=${country}&M=on`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // חיפוש פרשת השבוע
+                const parashaItem = data.items.find(item => item.category === 'parashat');
+                const parasha = parashaItem ? parashaItem.hebrew : "לא נמצא";
+
+                // חיפוש זמני כניסת ויציאת שבת
+                const candlesItem = data.items.find(item => item.category === 'candles');
+                const havdalahItem = data.items.find(item => item.category === 'havdalah');
+
+                const candlesTime = candlesItem ? new Date(candlesItem.date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : "לא נמצא";
+                const havdalahTime = havdalahItem ? new Date(havdalahItem.date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : "לא נמצא";
+
+                // עדכון התצוגה
+                document.getElementById('parasha').textContent = parasha;
+                document.getElementById('candles-time').textContent = candlesTime;
+                document.getElementById('havdalah-time').textContent = havdalahTime;
+
+            } catch (error) {
+                console.error('שגיאה בטעינת הנתונים:', error);
+                document.getElementById('shabbat-display').innerHTML = 'שגיאה בטעינת הנתונים.';
+            }
+        }
+
+        fetchShabbatTimes();
+    </script>
+
+
+</div>
 
 
 
@@ -552,78 +626,65 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    let newsItems = [];        // מערך לאחסון הכתבות
-    let currentIndex = 0;      // אינדקס לכתבה הנוכחית
-    const display = document.getElementById("news-display"); // אזור התצוגה
+    let newsItems = [];
+    let currentIndex = 0;
+    const display = document.getElementById("news-display");
 
-    // RSS רשמי של Yahoo News (עובד ב-GitHub Pages)
-    const RSS_URL = "https://news.yahoo.com/rss/";
+    // וואלה RSS מקור
+    const WAALLA_RSS = "https://rss.walla.co.il/feed/1?type=main";
+    // שימוש בפרוקסי AllOrigins לעקיפת CORS
+    const RSS_URL = "https://api.allorigins.win/get?url=" + encodeURIComponent(WAALLA_RSS);
 
-    // שליפת ה-RSS
     fetch(RSS_URL)
-        .then(res => res.text())              // המרת התשובה לטקסט
-        .then(xmlText => {
-
-            const parser = new DOMParser();   // יצירת parser ל-XML
-            const xml = parser.parseFromString(xmlText, "text/xml");
+        .then(res => res.json())
+        .then(data => {
+            // הנתונים של ה-RSS נמצאים ב data.contents
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(data.contents, "text/xml");
             const items = xml.querySelectorAll("item");
 
-            // אם אין כתבות
             if (!items.length) {
                 display.textContent = "לא נמצאו חדשות";
                 return;
             }
 
-            newsItems = [];
-
             // שמירת עד 20 כתבות
-            items.forEach((item, i) => {
-                if (i < 20) {
-                    let title = item.querySelector("title")?.textContent || "";
-                    let link  = item.querySelector("link")?.textContent || "#";
+            newsItems = Array.from(items).slice(0, 20).map(item => ({
+                title: item.querySelector("title")?.textContent || "",
+                link: item.querySelector("link")?.textContent || "#"
+            }));
 
-                    // ניקוי סיומת "Yahoo News" מהכותרת
-                    title = title.replace(" - Yahoo News", "").trim();
-
-                    newsItems.push({ title, link });
-                }
-            });
-
-            showNews();                       // הצגת הכתבה הראשונה
-            setInterval(showNews, 10000);     // החלפה כל 10 שניות
+            showNews();
+            setInterval(showNews, 10000); // החלפה כל 10 שניות
         })
         .catch(err => {
-            console.error("שגיאת RSS:", err);
+            console.error("שגיאת RSS וואלה:", err);
             display.textContent = "שגיאה בטעינת החדשות";
         });
 
-    // פונקציה להצגת כתבה
     function showNews() {
         if (!newsItems.length) return;
 
-        const news = newsItems[currentIndex];
         const now = new Date();
-
         const time =
             now.getHours().toString().padStart(2, '0') + ":" +
             now.getMinutes().toString().padStart(2, '0');
 
-        display.innerHTML = `
-            <p>
-              ${time} —
-              <a href="${news.link}" target="_blank"
-                 style="color:white;text-decoration:none;">
-                 ${news.title}
-              </a>
-            </p>
-        `;
+        // הצגת כתבה אחת בלבד
+        const news = newsItems[currentIndex];
 
-        // מעבר לכתבה הבאה
+        display.innerHTML =
+            `<p>${time} — <a href="${news.link}" target="_blank" style="color:white;text-decoration:none;">
+            ${news.title}</a></p>`;
+
+        // קפיצה לכתבה הבאה
         currentIndex = (currentIndex + 1) % newsItems.length;
     }
 
 });
 </script>
+
+
 
 
 
