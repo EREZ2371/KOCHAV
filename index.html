@@ -468,93 +468,68 @@ href="https://forecast7.com/he/31d8034d66/ashdod/" data-label_1="אשדוד" dat
 <div class="containers">
 
 <div id="news-container">
-    <h2>גלובס</h2>
+    <h2>YNET</h2>
     <div id="news-display">טוען חדשות...</div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    let newsItems = [];            // מערך לאחסון החדשות
-    let currentIndex = 0;          // אינדקס להצגת הידיעה הנוכחית
-    const displayElement = document.getElementById("news-display"); // אלמנט התצוגה
+    let newsItems = [];                 // מערך לאחסון החדשות
+    let currentIndex = 0;               // אינדקס לידיעה הנוכחית
+    const display = document.getElementById("news-display"); // אזור תצוגה
 
-    // כתובת RSS של גלובס
-    const rssUrl = "https://www.globes.co.il/webservice/rss/rssfeeder.asmx/FeederNode?iID=2";
+    const RSS_URL = "https://www.ynet.co.il/Integration/StoryRss2.xml";
 
-    // שימוש בפרוקסי AllOrigins כדי לעקוף CORS
-    const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl);
+    // טעינת חדשות YNET
+    fetch(RSS_URL)
+        .then(response => response.text()) // RSS חוזר כ-XML
+        .then(xmlText => {
 
-    // פונקציה המביאה את נתוני החדשות
-    function fetchGlobesNews() {
-        fetch(proxy)
-            .then(response => response.json()) // מקבלים JSON מהפרוקסי
-            .then(data => {
+            const parser = new DOMParser();               // יצירת מפרסר XML
+            const xml = parser.parseFromString(xmlText, "text/xml");
+            const items = xml.querySelectorAll("item");   // כל הידיעות
 
-                let parser = new DOMParser(); 
-                let xml = parser.parseFromString(data.contents, "text/xml"); // המרת XML
+            newsItems = [];
 
-                let items = xml.querySelectorAll("item");
-
-                if (!items.length) {
-                    displayElement.textContent = "לא נמצאו חדשות.";
-                    return;
+            items.forEach((item, index) => {
+                if (index < 20) { // מגביל ל-20 חדשות
+                    newsItems.push({
+                        title: item.querySelector("title")?.textContent || "ללא כותרת",
+                        link: item.querySelector("link")?.textContent || "#"
+                    });
                 }
-
-                // איפוס המערך
-                newsItems = [];
-
-                // שמירת 20 כותרות בלבד
-                items.forEach((item, index) => {
-                    if (index < 20) {
-                        newsItems.push({
-                            title: item.querySelector("title")?.textContent || "ללא כותרת",
-                            link: item.querySelector("link")?.textContent || "#"
-                        });
-                    }
-                });
-
-                // התחלת הצגה
-                updateNews();
-            })
-            .catch(error => {
-                console.error("גלובס — שגיאה:", error);
-                displayElement.textContent = "שגיאה בטעינת החדשות.";
             });
-    }
 
-    // מציג ידיעה אחת בכל פעם
-    function updateNews() {
-        if (newsItems.length === 0) return;
+            showNews();                          // הצגת ידיעה ראשונה
+            setInterval(showNews, 10000);        // החלפה כל 10 שניות
+        })
+        .catch(error => {
+            console.error("שגיאה בטעינת YNET:", error);
+            display.textContent = "שגיאה בטעינת חדשות YNET";
+        });
 
-        let news = newsItems[currentIndex];
+    // הצגת ידיעה אחת
+    function showNews() {
+        if (!newsItems.length) return;
 
-        // זמן נוכחי להצגה לפני החדשה
-        let now = new Date();
-        let timeString =
+        const news = newsItems[currentIndex];
+
+        const now = new Date();
+        const time =
             now.getHours().toString().padStart(2, '0') + ":" +
             now.getMinutes().toString().padStart(2, '0');
 
-        displayElement.innerHTML =
-            `<p>${timeString} — <a href="${news.link}" target="_blank" style="color:white;text-decoration:none;">${news.title}</a></p>`;
+        display.innerHTML =
+            `<p>${time} — <a href="${news.link}" target="_blank"
+            style="color:white;text-decoration:none;">
+            ${news.title}</a></p>`;
 
-        // מעבר לידיעה הבאה
         currentIndex = (currentIndex + 1) % newsItems.length;
     }
 
-    // טעינה ראשונית
-    fetchGlobesNews();
-
-    // רענון נתונים כל 10 דקות
-    setInterval(fetchGlobesNews, 600000);
-
-    // החלפת ידיעה כל 10 שניות
-    setInterval(updateNews, 10000);
-
 });
 </script>
-
-
 
 
 
@@ -705,46 +680,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
-<!-- רענון אוטומטי כל חצי שעה עגולה -->
-<script>
-// פונקציה שמאתרת את זמן הרענון הקרוב (:00 או :30)
-function reloadOnHalfHour() {
 
-    const now = new Date();                       // לוקח את זמן המערכת
-    const minutes = now.getMinutes();             // דקות כרגע
-    const seconds = now.getSeconds();             // שניות כרגע
-    const ms = now.getMilliseconds();             // מילישניות כרגע
-
-    let minutesToNext;                            // חישוב כמה דקות נשארו לרענון הבא
-
-    if (minutes < 30) {
-        minutesToNext = 30 - minutes;             // לפני :30 → רענון ב־:30
-    } else {
-        minutesToNext = 60 - minutes;             // אחרי :30 → רענון ב־:00 הבא
-    }
-
-    // חישוב זמן מדויק עד הרענון הקרוב
-    const timeToNextHalfHour =
-        minutesToNext * 60 * 1000 -              // דקות → מ״ש
-        seconds * 1000 -                         // מנקה שניות
-        ms;                                      // מנקה מילישניות
-
-    console.log("הדף יתרענן בעוד:", timeToNextHalfHour / 1000, "שניות");
-
-    // מפעיל את הרענון כשמגיע הזמן
-    setTimeout(() => {
-        location.reload();                        // רענון הדף בפועל
-    }, timeToNextHalfHour);
-}
-
-// הפעלה אוטומטית כשעמוד נטען
-reloadOnHalfHour();
-</script>
 
 
 
   
 </body>
 </html>
-
-
