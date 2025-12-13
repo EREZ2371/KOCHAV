@@ -468,7 +468,7 @@ href="https://forecast7.com/he/31d8034d66/ashdod/" data-label_1="אשדוד" dat
 <div class="containers">
 
 <div id="news-container">
-    <h2>YNET</h2>
+    <h2>Y N E T</h2>
     <div id="news-display">טוען חדשות...</div>
 </div>
 
@@ -477,44 +477,53 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let newsItems = [];                 // מערך לאחסון החדשות
     let currentIndex = 0;               // אינדקס לידיעה הנוכחית
-    const display = document.getElementById("news-display"); // אזור תצוגה
+    const display = document.getElementById("news-display");
 
+    // RSS של YNET
     const RSS_URL = "https://www.ynet.co.il/Integration/StoryRss2.xml";
 
-    // טעינת חדשות YNET
-    fetch(RSS_URL)
-        .then(response => response.text()) // RSS חוזר כ-XML
-        .then(xmlText => {
+    // Proxy לעקיפת CORS
+    const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(RSS_URL);
 
-            const parser = new DOMParser();               // יצירת מפרסר XML
-            const xml = parser.parseFromString(xmlText, "text/xml");
-            const items = xml.querySelectorAll("item");   // כל הידיעות
+    // טעינת החדשות
+    function fetchYnetNews() {
+        fetch(PROXY_URL)
+            .then(response => response.text())   // RSS חוזר כ-XML
+            .then(xmlText => {
 
-            newsItems = [];
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(xmlText, "text/xml");
+                const items = xml.querySelectorAll("item");
 
-            items.forEach((item, index) => {
-                if (index < 20) { // מגביל ל-20 חדשות
-                    newsItems.push({
-                        title: item.querySelector("title")?.textContent || "ללא כותרת",
-                        link: item.querySelector("link")?.textContent || "#"
-                    });
+                if (!items.length) {
+                    display.textContent = "לא נמצאו חדשות";
+                    return;
                 }
+
+                newsItems = [];
+
+                items.forEach((item, index) => {
+                    if (index < 20) {
+                        newsItems.push({
+                            title: item.querySelector("title")?.textContent || "ללא כותרת",
+                            link: item.querySelector("link")?.textContent || "#"
+                        });
+                    }
+                });
+
+                showNews(); // הצגת ידיעה ראשונה
+            })
+            .catch(error => {
+                console.error("YNET error:", error);
+                display.textContent = "שגיאה בטעינת חדשות YNET";
             });
+    }
 
-            showNews();                          // הצגת ידיעה ראשונה
-            setInterval(showNews, 10000);        // החלפה כל 10 שניות
-        })
-        .catch(error => {
-            console.error("שגיאה בטעינת YNET:", error);
-            display.textContent = "שגיאה בטעינת חדשות YNET";
-        });
-
-    // הצגת ידיעה אחת
+    // הצגת ידיעה
     function showNews() {
         if (!newsItems.length) return;
 
         const news = newsItems[currentIndex];
-
         const now = new Date();
         const time =
             now.getHours().toString().padStart(2, '0') + ":" +
@@ -528,8 +537,18 @@ document.addEventListener("DOMContentLoaded", function () {
         currentIndex = (currentIndex + 1) % newsItems.length;
     }
 
+    // טעינה ראשונית
+    fetchYnetNews();
+
+    // רענון נתונים כל 10 דקות
+    setInterval(fetchYnetNews, 600000);
+
+    // החלפת ידיעה כל 10 שניות
+    setInterval(showNews, 10000);
+
 });
 </script>
+
 
 
 
