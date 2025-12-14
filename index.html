@@ -640,31 +640,30 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentIndex = 0;
     const display = document.getElementById("news-display");
 
-    // כאן הקובץ שנוצר ב-GitHub Actions
-    const RSS_URL = "https://username.github.io/repo-name/rss_feed.json";
+    // כתובת הקובץ שנוצר על ידי GitHub Actions
+    const NEWS_URL = "https://username.github.io/repo-name/breaking-news.json";
 
-    fetch(RSS_URL)
+    fetch(NEWS_URL)
         .then(res => res.json())
         .then(data => {
-            // לפי workflow שלנו, ה-JSON מכיל מערך בשם 'news'
-            if (!data.news || !data.news.length) {
+            if (!data.articles || !data.articles.length) {
                 display.textContent = "לא נמצאו חדשות";
                 return;
             }
 
             // שמירת עד 20 כתבות
-            newsItems = data.news.slice(0, 20).map(item => ({
+            newsItems = data.articles.slice(0, 20).map(item => ({
                 title: item.title,
-                link: item.link,
-                pubDate: item.pubDate || "",
-                thumbnail: item.thumbnail || ""
+                link: item.url,
+                pubDate: item.publishedAt || "",
+                thumbnail: item.urlToImage || ""
             }));
 
             showNews();
             setInterval(showNews, 10000); // החלפה כל 10 שניות
         })
         .catch(err => {
-            console.error("שגיאת RSS:", err);
+            console.error("שגיאת חדשות:", err);
             display.textContent = "שגיאה בטעינת החדשות";
         });
 
@@ -686,6 +685,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
+
 
 
 
