@@ -233,7 +233,7 @@
 
 #news-container, #shabbat-container {
     width: 50VW;
-    height: 40vh; /* שמירה על אותו גובה */
+    height: 44vh; /* שמירה על אותו גובה */
     background: #526E93;
 	position: relative;
 	font-size: 30px;
@@ -249,7 +249,7 @@
 	
 	
 	
-	/* גלובס*/
+	/* ONE*/
     #news-container {
 	 
 	margin-top: 20px; /* מזיז את הכותרת כלפי מעלה */
@@ -291,7 +291,7 @@
 /* הלוגו עצמו */
 #news-container .ticker-image {
     display: inline-block;
-    height: 7vh;               /* גובה הלוגו */
+    height: 6vh;               /* גובה הלוגו */
 }
 
 /* מיכל הרקע שמאחורי התמונה בלבד */
@@ -516,7 +516,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const display = document.getElementById("news-display");
 
     const RSS_URL = "https://api.rss2json.com/v1/api.json?rss_url=" +
-        encodeURIComponent("https://www.ynet.co.il/Integration/StoryRss2.xml");
+        encodeURIComponent("https://www.ynet.co.il/Integration/StoryRss1854.xml");
 
     fetch(RSS_URL)
         .then(res => res.json())
@@ -627,7 +627,7 @@ setInterval(fetchShabbatTimes, 60 * 60 * 1000);
 
 <!-- אזור הצגת המבזקים -->
 <div class="news-ticker-wrapper">
-  <img src="images/news-icon.png" alt="מבזקי חדשות" class="ticker-image">
+  <img src="images/ONE-LOGO2.png" alt="מבזקי חדשות" class="ticker-image">
   <div id="newsTicker">
     <span class="news-time">00:00</span>
     <span class="news-title"><a href="#">טוען חדשות...</a></span>
@@ -638,55 +638,57 @@ setInterval(fetchShabbatTimes, 60 * 60 * 1000);
 document.addEventListener("DOMContentLoaded", function () {
     let newsItems = [];
     let currentIndex = 0;
-    const display = document.getElementById("news-display");
+    const timeEl = document.querySelector("#newsTicker .news-time");
+    const titleEl = document.querySelector("#newsTicker .news-title a");
 
-    // כתובת הקובץ שנוצר על ידי GitHub Actions
-    const NEWS_URL = "https://username.github.io/repo-name/breaking-news.json";
+    // הכנס כאן את ה-API Key שלך מ-RSS2JSON
+    const API_KEY = "zargzmqijtpirc89upqofpucnlaponqh1vlhel5b";
 
-    fetch(NEWS_URL)
+    // RSS של ONE
+    const RSS_URL = encodeURIComponent("https://www.one.co.il/cat/coop/xml/rss/newsfeed.aspx");
+
+    const url = `https://api.rss2json.com/v1/api.json?rss_url=${RSS_URL}&api_key=${API_KEY}&count=20`; 
+
+
+    fetch(url)
         .then(res => res.json())
         .then(data => {
-            if (!data.articles || !data.articles.length) {
-                display.textContent = "לא נמצאו חדשות";
+            if (!data.items || !data.items.length) {
+                titleEl.textContent = "לא נמצאו חדשות";
                 return;
             }
 
-            // שמירת עד 20 כתבות
-            newsItems = data.articles.slice(0, 20).map(item => ({
+            // שמירת עד 20 כותרות
+            newsItems = data.items.map(item => ({
                 title: item.title,
-                link: item.url,
-                pubDate: item.publishedAt || "",
-                thumbnail: item.urlToImage || ""
+                link: item.link
             }));
 
             showNews();
             setInterval(showNews, 10000); // החלפה כל 10 שניות
         })
         .catch(err => {
-            console.error("שגיאת חדשות:", err);
-            display.textContent = "שגיאה בטעינת החדשות";
+            console.error("שגיאת RSS:", err);
+            titleEl.textContent = "שגיאה בטעינת החדשות";
         });
 
     function showNews() {
         if (!newsItems.length) return;
 
         const now = new Date();
-        const time =
-            now.getHours().toString().padStart(2, '0') + ":" +
-            now.getMinutes().toString().padStart(2, '0');
+        const time = now.getHours().toString().padStart(2, '0') + ":" +
+                     now.getMinutes().toString().padStart(2, '0');
 
         const news = newsItems[currentIndex];
 
-        display.innerHTML =
-            `<p>${time} — <a href="${news.link}" target="_blank" style="color:white;text-decoration:none;">
-            ${news.title}</a></p>`;
+        timeEl.textContent = time;
+        titleEl.href = news.link;
+        titleEl.textContent = news.title;
 
         currentIndex = (currentIndex + 1) % newsItems.length;
     }
 });
 </script>
-
-
 
 
 
