@@ -366,20 +366,20 @@
 </div>
 
 <script>
-    let currentImageIndex = 0; // אינדקס התמונה הנוכחית
+    let currentImageIndex = 0;      // אינדקס התמונה
+    let slideshowInterval = null;   // שומר את ה־interval (חשוב!)
 
     // פונקציה להוריד את רשימת התמונות מקובץ JSON
     function fetchImageList() {
-        fetch('images.json') // קריאה לקובץ ה-JSON שמחזיר את רשימת התמונות
-            .then(response => response.json()) // המרת התשובה ל-JSON
+        fetch('images.json')
+            .then(response => response.json())
             .then(data => {
-                console.log(data.images); // הצגת רשימת התמונות
-                // עדכון התמונות
-                updateImages(data.images);
+                console.log(data.images);
+                updateImages(data.images || []);
             })
             .catch(error => {
                 console.error('Error fetching images:', error);
-                updateImages([]); // אם יש שגיאה, לא להציג שום תמונה
+                updateImages([]);
             });
     }
 
@@ -388,33 +388,46 @@
         const image1 = document.getElementById('image1');
         const image2 = document.getElementById('image2');
 
-        // אם אין תמונות בכלל
+        // איפוס תצוגה
+        image1.style.display = 'none';
+        image2.style.display = 'none';
+        image1.style.opacity = 1;
+        image2.style.opacity = 0;
+
+        // אם אין תמונות
         if (images.length === 0) {
-            image1.style.display = 'none'; // לא להציג את התמונה הראשונה
-            image2.style.display = 'none'; // לא להציג את התמונה השנייה
+            stopSlideshow();
+            return;
         }
-        // אם יש תמונה אחת בלבד
-        else if (images.length === 1) {
-            image1.src = images[0]; // הצגת התמונה היחידה
-            image2.style.display = 'none'; // הסתרת התמונה השנייה
-            image1.style.display = 'block'; // הצגת התמונה הראשונה
+
+        // אם יש תמונה אחת
+        if (images.length === 1) {
+            stopSlideshow();
+            image1.src = images[0];
+            image1.style.display = 'block';
+            return;
         }
-        // אם יש שתי תמונות
-        else if (images.length >= 2) {
-            image1.src = images[0]; // הצגת התמונה הראשונה
-            image2.src = images[1]; // הצגת התמונה השנייה
-            image1.style.display = 'block'; // הצגת התמונה הראשונה
-            image2.style.display = 'block'; // הצגת התמונה השנייה
-            displayImages(images); // הצגת התמונות במחזוריות
+
+        // אם יש 2 תמונות או יותר
+        image1.src = images[0];
+        image2.src = images[1];
+        image1.style.display = 'block';
+        image2.style.display = 'block';
+
+        // הפעלת סליידר פעם אחת בלבד
+        if (!slideshowInterval) {
+            startSlideshow();
         }
     }
 
-    // פונקציה להציג את התמונות במחזוריות
-    function displayImages(images) {
-        setInterval(() => {
-            const image1 = document.getElementById('image1');
-            const image2 = document.getElementById('image2');
+    // הפעלת סליידר
+    function startSlideshow() {
+        const image1 = document.getElementById('image1');
+        const image2 = document.getElementById('image2');
 
+        currentImageIndex = 0;
+
+        slideshowInterval = setInterval(() => {
             if (currentImageIndex === 0) {
                 image1.style.opacity = 1;
                 image2.style.opacity = 0;
@@ -423,17 +436,24 @@
                 image2.style.opacity = 1;
             }
 
-            currentImageIndex = (currentImageIndex + 1) % images.length;
-        }, 10000); // כל 10 שניות
+            currentImageIndex = (currentImageIndex + 1) % 2;
+        }, 10000); // ⏱ החלפה כל 10 שניות
     }
 
-    // קריאה ראשונית להורדת רשימת התמונות
+    // עצירת סליידר אם צריך
+    function stopSlideshow() {
+        if (slideshowInterval) {
+            clearInterval(slideshowInterval);
+            slideshowInterval = null;
+        }
+    }
+
+    // קריאה ראשונית
     fetchImageList();
 
-    // עדכון התמונות כל 20 שניות
+    // רענון רשימת תמונות כל 20 שניות
     setInterval(fetchImageList, 20000);
 </script>
-
 
 
 
@@ -701,6 +721,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
 </body>
 </html>
+
 
 
 
